@@ -2,11 +2,13 @@ package com.hjadal.portalis
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Html
 import android.text.method.ScrollingMovementMethod
 import com.hjadal.portalis.databinding.ActivityMainBinding
 import okhttp3.*
 import java.io.IOException
 import okhttp3.Response
+import org.jsoup.Jsoup
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,15 +32,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun userClicked() {
-        run("http://hjaltesorgenfrei.dk", object : Callback {
+        run("https://www.royalroad.com/fiction/22518/chrysalis/chapter/321896/chapter-1-anthony-reborn", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
 
             override fun onResponse(call: Call, response: Response) {
                 val result = response.body?.string();
+                var doc = Jsoup.parse(result);
+                var elements = doc.getElementsByClass("chapter-content")
+                val toDisplay = Html.fromHtml(elements[0].html());
+                println(toDisplay)
                 runOnUiThread {
-                    binding.mainText.text = result
+                    binding.mainText.text = toDisplay
                     binding.mainText.movementMethod = ScrollingMovementMethod()
                 }
             }
