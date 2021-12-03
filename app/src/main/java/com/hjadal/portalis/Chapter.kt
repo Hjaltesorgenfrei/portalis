@@ -1,3 +1,5 @@
 package com.hjadal.portalis
 
-class Chapter(val title: String)
+import java.io.Serializable
+
+class Chapter(val title: String, val uri: String, val number: String) : Serializable

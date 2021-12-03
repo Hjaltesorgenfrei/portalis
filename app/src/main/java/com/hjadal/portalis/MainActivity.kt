@@ -1,27 +1,21 @@
 package com.hjadal.portalis
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.AdapterView
+import androidx.appcompat.app.AppCompatActivity
 import com.hjadal.portalis.databinding.ActivityMainBinding
-import okhttp3.*
-import java.io.IOException
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.Response
 import org.jsoup.Jsoup
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val client: OkHttpClient = OkHttpClient()
     lateinit var binding: ActivityMainBinding
 
-    @Throws(IOException::class)
-    fun run(url: String, callback: Callback) {
-        val request: Request = Request.Builder()
-            .url(url)
-            .build()
-        client.newCall(request).enqueue(callback)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,14 +24,21 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         binding.listView.onItemClickListener =
             AdapterView.OnItemClickListener { adapterView, _, position, _ ->
-                println((adapterView.getItemAtPosition((position)) as Chapter).title)
+                switchToChapterView((adapterView.getItemAtPosition((position)) as Chapter))
             }
         setContentView(binding.root)
     }
 
+    private fun switchToChapterView(chapter: Chapter) {
+        val intent = Intent(this, ReadChapterActivity::class.java).apply {
+            putExtra("chapter", chapter)
+        }
+        startActivity(intent)
+    }
+
     private fun loadChapters() {
         val context = this
-        run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
+        NetUtil.run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
@@ -47,8 +48,13 @@ class MainActivity : AppCompatActivity() {
                 val doc = Jsoup.parse(result as String)
                 val elements = doc.getElementsByClass("chapter-row")
                 val chapters = elements.toList()
-                    .map {e -> Chapter(e.getElementsByTag("a")[0].text())}
-                println(chapters)
+                    .map { e ->
+                        val title = e.getElementsByTag("a")[0].text()
+                        val uri = "https://www.royalroad.com" + e.attr("data-url")
+                        val number =
+                            e.getElementsByAttribute("data-content")[0].attr("data-content")
+                        Chapter(title, uri, number)
+                    }
                 runOnUiThread {
                     binding.listView.adapter = ChapterAdapter(context, chapters)
                 }

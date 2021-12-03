@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import com.hjadal.portalis.databinding.ItemChaptersviewBinding
 
-class ChapterAdapter(context: Context, private val chapters: List<Chapter>) : BaseAdapter() {
+class ChapterAdapter(private val context: Context, private val chapters: List<Chapter>) : BaseAdapter() {
 
-    private val inflater: LayoutInflater
-            = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    private val inflater: LayoutInflater =
+        context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
     override fun getCount(): Int {
         return this.chapters.size
@@ -26,9 +26,11 @@ class ChapterAdapter(context: Context, private val chapters: List<Chapter>) : Ba
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val chapter = getItem(position)
-        val view: View = convertView ?: ItemChaptersviewBinding.inflate(inflater, parent, false).root
+        val view: View =
+            convertView ?: ItemChaptersviewBinding.inflate(inflater, parent, false).root
         val binding = (ItemChaptersviewBinding.bind(view))
-        binding.textView.text = chapter.title
+        binding.title.text = chapter.title
+        binding.chapterNumber.text = context.getString(R.string.chapter_number, chapter.number)
         return view
     }
 }
