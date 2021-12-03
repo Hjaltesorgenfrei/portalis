@@ -25,17 +25,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        this.userClicked()
+        this.loadChapters()
 
+        binding = ActivityMainBinding.inflate(layoutInflater)
         binding.listView.onItemClickListener =
-            AdapterView.OnItemClickListener { adapterView, view, position, id ->
+            AdapterView.OnItemClickListener { adapterView, _, position, _ ->
                 println((adapterView.getItemAtPosition((position)) as Chapter).title)
             }
         setContentView(binding.root)
     }
 
-    private fun userClicked() {
+    private fun loadChapters() {
         val context = this
         run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 val result = response.body?.string()
-                val doc = Jsoup.parse(result)
+                val doc = Jsoup.parse(result as String)
                 val elements = doc.getElementsByClass("chapter-row")
                 val chapters = elements.toList()
                     .map {e -> Chapter(e.getElementsByTag("a")[0].text())}

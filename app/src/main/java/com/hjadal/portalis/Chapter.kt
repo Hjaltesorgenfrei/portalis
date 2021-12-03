@@ -1,4 +1,3 @@
 package com.hjadal.portalis
 
-class Chapter(val title: String) {
-}
+class Chapter(val title: String)
