@@ -2,7 +2,6 @@ package com.hjadal.portalis
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import com.hjadal.portalis.databinding.ActivityMainBinding
 import okhttp3.Call
@@ -22,10 +21,6 @@ class MainActivity : AppCompatActivity() {
         this.loadChapters()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.listView.onItemClickListener =
-            AdapterView.OnItemClickListener { adapterView, _, position, _ ->
-                switchToChapterView((adapterView.getItemAtPosition((position)) as Chapter))
-            }
         setContentView(binding.root)
     }
 
@@ -37,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadChapters() {
-        val context = this
         NetUtil.run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
@@ -56,7 +50,11 @@ class MainActivity : AppCompatActivity() {
                         Chapter(title, uri, number)
                     }
                 runOnUiThread {
-                    binding.listView.adapter = ChapterAdapter(context, chapters)
+                    binding.listView.adapter = ChapterAdapter(chapters) { chapter ->
+                        switchToChapterView(
+                            chapter
+                        )
+                    }
                 }
             }
         })

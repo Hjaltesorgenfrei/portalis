@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        app:layoutManager="LinearLayoutManager"/>
 
     <Button
         android:id="@+id/clickButton"
@@ -20,7 +20,7 @@
         app:fabSize="auto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/list_view"/>
+        app:layout_constraintTop_toBottomOf="@+id/list_view" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
