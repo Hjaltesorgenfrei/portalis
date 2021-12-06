@@ -3,10 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/code/portalis/app/src/main/res/layout/activity_chapter.xml" value="0.20520833333333333" />
-        <entry key="..\:/code/portalis/app/src/main/res/layout/activity_main.xml" value="0.20520833333333333" />
-        <entry key="..\:/code/portalis/app/src/main/res/layout/activity_read_chapter.xml" value="0.20520833333333333" />
-        <entry key="..\:/code/portalis/app/src/main/res/layout/item_chaptersview.xml" value="0.20520833333333333" />
+        <entry key="../../../../layout/compose-model-1638800676007.xml" value="0.67" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.37135416666666665" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.37135416666666665" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.22" />

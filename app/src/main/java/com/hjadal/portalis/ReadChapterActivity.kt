@@ -5,7 +5,6 @@ import android.text.method.ScrollingMovementMethod
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
-import com.hjadal.portalis.databinding.ActivityReadChapterBinding
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -14,17 +13,17 @@ import java.io.IOException
 
 class ReadChapterActivity : AppCompatActivity() {
     private lateinit var chapter: Chapter
-    private lateinit var binding: ActivityReadChapterBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         chapter = intent.getSerializableExtra("chapter") as Chapter
 
+        /*
         binding = ActivityReadChapterBinding.inflate(layoutInflater)
         setContentView(binding.root)
         supportActionBar?.title = chapter.title
         binding.text.movementMethod = ScrollingMovementMethod()
-
+        */
         downloadChapter()
     }
 
@@ -41,8 +40,6 @@ class ReadChapterActivity : AppCompatActivity() {
                 val chapterText =
                     HtmlCompat.fromHtml(chapterHtml, HtmlCompat.FROM_HTML_MODE_LEGACY)
                 runOnUiThread {
-                    binding.text.text = chapterText
-                    binding.loadingPanel.visibility = View.INVISIBLE
                 }
             }
         })
