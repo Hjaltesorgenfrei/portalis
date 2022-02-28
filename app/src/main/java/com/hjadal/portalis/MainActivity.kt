@@ -31,11 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 class MainActivity : AppCompatActivity() {
@@ -43,47 +50,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val navController = rememberNavController()
             PortalisTheme.Theme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    BookScreen()
+                   SetupRootNav(navController)
                 }
             }
         }
-        loadChapters()
     }
+}
 
-    private fun switchToChapterView(chapter: Chapter) {
-        val intent = Intent(this, ReadChapterActivity::class.java).apply {
-            putExtra("chapter", chapter)
+@Composable
+private fun SetupRootNav(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "bookscreen") {
+        composable("bookscreen") {
+            BookScreen(navController)
         }
-        startActivity(intent)
-    }
-
-    private fun loadChapters() {
-        NetUtil.run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val result = response.body?.string()
-                val doc = Jsoup.parse(result as String)
-                val elements = doc.getElementsByClass("chapter-row")
-                val chapters = elements.toList()
-                    .map { e ->
-                        val title = e.getElementsByTag("a")[0].text()
-                        val uri = "https://www.royalroad.com" + e.attr("data-url")
-                        val number =
-                            e.getElementsByAttribute("data-content")[0].attr("data-content")
-                        Chapter(title, uri, number)
-                    }
-                val viewModel by viewModels<BookModel>()
-                viewModel.chaptersReady(chapters)
-            }
-        })
+        composable("read_chapter/{url}") {
+            navBackStackEntry ->
+                navBackStackEntry.arguments?.getString("url")?.let { ReadChapter(it) }
+        }
     }
 }
 
@@ -99,16 +88,45 @@ class BookModel : ViewModel() {
 
     var uiState by mutableStateOf(BookUiState())
         private set
+
+    init {
+        loadChapters(this)
+    }
 }
 
 @Composable
 private fun BookScreen(
+    navController: NavHostController,
     viewModel: BookModel = viewModel()
 ) {
     when (viewModel.uiState.loading) {
         true -> Text("Loading")
-        false -> ChaptersScreen(viewModel.uiState.chapters)
+        false -> ChaptersScreen(viewModel.uiState.chapters, navController)
     }
+}
+
+private fun loadChapters(viewModel: BookModel) {
+    NetUtil.run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            e.printStackTrace()
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            val result = response.body?.string()
+            val doc = Jsoup.parse(result as String)
+            val elements = doc.getElementsByClass("chapter-row")
+            val chapters = elements.toList()
+                .map { e ->
+                    val title = e.getElementsByTag("a")[0].text()
+                    val uri = "https://www.royalroad.com" + e.attr("data-url")
+                    val number =
+                        e.getElementsByAttribute("data-content")[0].attr("data-content")
+                    Chapter(title, uri, number)
+                }
+            viewModel.chaptersReady(chapters)
+            println(chapters.size.toString() + " chapters read")
+        }
+    })
 }
 
 @Composable
@@ -117,7 +135,7 @@ private fun HeaderView() {
 }
 
 @Composable
-private fun ChaptersScreen(chapters: List<Chapter>) {
+private fun ChaptersScreen(chapters: List<Chapter>, navController: NavController) {
     LazyColumn {
         item {
             HeaderView()
@@ -145,22 +163,13 @@ private fun ChaptersScreen(chapters: List<Chapter>) {
                     Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .clickable { println("Download " + chapter.title) }
+                        .clickable {
+                            val url = URLEncoder.encode(chapter.uri, StandardCharsets.UTF_8.toString())
+                            navController.navigate("read_chapter/$url")
+                        }
                         .padding(8.dp))
             }
         }
     }
 }
-
-@Preview
-@Composable
-fun ComposablePreview() {
-    ChaptersScreen(
-        listOf(
-            Chapter("Great", "--", "--"),
-            Chapter("Chapter 2 - Harry goes to School", "--", "--")
-        )
-    )
-}
-
 
