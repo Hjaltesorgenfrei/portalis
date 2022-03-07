@@ -41,8 +41,7 @@ data class OverviewUiState(
 
 @HiltViewModel
 class OverviewModel @Inject constructor(
-    val currentBook: CurrentBook,
-    val currentChapter: CurrentChapter
+    val currentBook: CurrentBook
 ) : ViewModel() {
 
     fun booksReady(books: List<Book>) {
