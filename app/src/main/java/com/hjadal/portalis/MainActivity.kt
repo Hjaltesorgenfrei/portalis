@@ -163,8 +163,7 @@ private fun ChaptersScreen(
                     Text(
                         chapter.title,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colors.primary
+                        fontSize = 16.sp
                     )
                     Text("12/07/2021", color = Color.Gray)
                 }
