@@ -24,7 +24,7 @@ import javax.inject.Singleton
 fun ReadChapter() {
     val viewModel: ChapterModel = hiltViewModel()
     when (viewModel.uiState.loading) {
-        true -> Text("Loading")
+        true -> CenteredLoadingSpinner()
         false -> Text(
             viewModel.uiState.chapterContent,
             modifier = Modifier.verticalScroll(rememberScrollState())
