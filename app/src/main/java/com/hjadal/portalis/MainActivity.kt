@@ -1,9 +1,7 @@
 package com.hjadal.portalis
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,11 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -36,6 +33,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -43,8 +42,10 @@ import org.jsoup.Jsoup
 import java.io.IOException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,9 +70,8 @@ private fun SetupRootNav(navController: NavHostController) {
         composable("bookscreen") {
             BookScreen(navController)
         }
-        composable("read_chapter/{url}") {
-            navBackStackEntry ->
-                navBackStackEntry.arguments?.getString("url")?.let { ReadChapter(it) }
+        composable("read_chapter") {
+            ReadChapter()
         }
     }
 }
@@ -81,7 +81,15 @@ data class BookUiState(
     val loading: Boolean = true
 )
 
-class BookModel : ViewModel() {
+@Singleton
+class CurrentBook @Inject constructor() {
+    var url = "https://www.royalroad.com/fiction/22518/chrysalis"
+    var read = false
+}
+
+@HiltViewModel
+class BookModel @Inject constructor(private val currentBook: CurrentBook, val currentChapter: CurrentChapter) : ViewModel() {
+
     fun chaptersReady(chapters: List<Chapter>) {
         uiState = BookUiState(chapters, false)
     }
@@ -89,24 +97,27 @@ class BookModel : ViewModel() {
     var uiState by mutableStateOf(BookUiState())
         private set
 
+    val url = currentBook.url
+
     init {
         loadChapters(this)
+        currentBook.read = true
     }
 }
 
 @Composable
 private fun BookScreen(
     navController: NavHostController,
-    viewModel: BookModel = viewModel()
+    viewModel: BookModel = hiltViewModel()
 ) {
     when (viewModel.uiState.loading) {
         true -> Text("Loading")
-        false -> ChaptersScreen(viewModel.uiState.chapters, navController)
+        false -> ChaptersScreen(navController)
     }
 }
 
 private fun loadChapters(viewModel: BookModel) {
-    NetUtil.run("https://www.royalroad.com/fiction/22518/chrysalis", object : Callback {
+    NetUtil.run(viewModel.url, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()
         }
@@ -135,12 +146,15 @@ private fun HeaderView() {
 }
 
 @Composable
-private fun ChaptersScreen(chapters: List<Chapter>, navController: NavController) {
+private fun ChaptersScreen(
+    navController: NavController,
+   viewModel: BookModel = hiltViewModel()
+) {
     LazyColumn {
         item {
             HeaderView()
         }
-        items(chapters) { chapter ->
+        items(viewModel.uiState.chapters) { chapter ->
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -164,8 +178,8 @@ private fun ChaptersScreen(chapters: List<Chapter>, navController: NavController
                         .size(48.dp)
                         .clip(CircleShape)
                         .clickable {
-                            val url = URLEncoder.encode(chapter.uri, StandardCharsets.UTF_8.toString())
-                            navController.navigate("read_chapter/$url")
+                            viewModel.currentChapter.chapter = chapter
+                            navController.navigate("read_chapter")
                         }
                         .padding(8.dp))
             }
