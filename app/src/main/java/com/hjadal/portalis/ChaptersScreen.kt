@@ -41,7 +41,7 @@ internal data class BookUiState(
 
 @Singleton
 class CurrentBook @Inject constructor() {
-    var url = "https://www.royalroad.com/fiction/22518/chrysalis"
+    var book: Book? = null
 }
 
 @HiltViewModel
@@ -57,7 +57,7 @@ class BookModel @Inject constructor(
     internal var uiState by mutableStateOf(BookUiState())
         private set
 
-    val url = currentBook.url
+    val url = currentBook.book?.uri
 
     init {
         loadChapters(this)
@@ -76,7 +76,8 @@ fun BookScreen(
 }
 
 private fun loadChapters(viewModel: BookModel) {
-    NetUtil.run(viewModel.url, object : Callback {
+    viewModel.url?.let {
+        NetUtil.run(it, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()
         }
@@ -97,6 +98,7 @@ private fun loadChapters(viewModel: BookModel) {
             println(chapters.size.toString() + " chapters read")
         }
     })
+    }
 }
 
 @Composable

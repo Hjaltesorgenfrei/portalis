@@ -1,6 +1,8 @@
 package com.hjadal.portalis
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
@@ -14,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -66,23 +69,26 @@ fun Overview(
             cells = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(all = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             items(viewModel.uiState.books) { book ->
-                Cover(book)
+                Cover(book, onClick = {
+                    viewModel.currentBook.book = book
+                    navController.navigate("book_screen")
+                })
             }
         }
     }
 }
 
 @Composable
-private fun Cover(book: Book) {
-
+private fun Cover(book: Book, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(ratio = 0.75f, matchHeightConstraintsFirst = false)
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.BottomStart,
     ) {
         AsyncImage(
@@ -90,6 +96,19 @@ private fun Cover(book: Book) {
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
+        )
+        Spacer(
+            Modifier
+                .fillMaxWidth()
+                .height(128.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black
+                        )
+                    )
+                )
         )
         Text(
             text = book.title,
@@ -112,9 +131,11 @@ private fun loadBooks(viewModel: OverviewModel) {
             val elements = doc.getElementsByClass("fiction-list-item row")
             val books = elements.toList()
                 .map { e ->
-                    val title = e.getElementsByClass("fiction-title")[0].text()
+                    val title = e.getElementsByClass("fiction-title")[0]
+                    val href = title.getElementsByAttribute("href")[0].attr("href")
+                    val uri = "https://www.royalroad.com$href"
                     val imageUri = e.getElementsByTag("img")[0].attr("src")
-                    Book(title, "", imageUri)
+                    Book(title.text(), uri, imageUri)
                 }
             viewModel.booksReady(books)
         }
