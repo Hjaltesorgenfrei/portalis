@@ -55,6 +55,7 @@ android {
 }
 
 dependencies {
+    implementation project(path: ':lib')
     def lifecycle_version = "2.4.1"
     def nav_version = "2.4.1"
 

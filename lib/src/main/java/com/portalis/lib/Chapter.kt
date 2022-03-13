@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.lib
 
 import java.io.Serializable
 

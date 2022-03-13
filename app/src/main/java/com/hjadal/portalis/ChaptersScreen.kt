@@ -29,6 +29,8 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.jsoup.Jsoup
+import com.portalis.lib.Book
+import com.portalis.lib.Chapter
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -78,26 +80,26 @@ fun BookScreen(
 private fun loadChapters(viewModel: BookModel) {
     viewModel.url?.let {
         NetUtil.run(it, object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            e.printStackTrace()
-        }
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
 
-        override fun onResponse(call: Call, response: Response) {
-            val result = response.body?.string()
-            val doc = Jsoup.parse(result as String)
-            val elements = doc.getElementsByClass("chapter-row")
-            val chapters = elements.toList()
-                .map { e ->
-                    val title = e.getElementsByTag("a")[0].text()
-                    val uri = "https://www.royalroad.com" + e.attr("data-url")
-                    val number =
-                        e.getElementsByAttribute("data-content")[0].attr("data-content")
-                    Chapter(title, uri, number)
-                }
-            viewModel.chaptersReady(chapters)
-            println(chapters.size.toString() + " chapters read")
-        }
-    })
+            override fun onResponse(call: Call, response: Response) {
+                val result = response.body?.string()
+                val doc = Jsoup.parse(result as String)
+                val elements = doc.getElementsByClass("chapter-row")
+                val chapters = elements.toList()
+                    .map { e ->
+                        val title = e.getElementsByTag("a")[0].text()
+                        val uri = "https://www.royalroad.com" + e.attr("data-url")
+                        val number =
+                            e.getElementsByAttribute("data-content")[0].attr("data-content")
+                        Chapter(title, uri, number)
+                    }
+                viewModel.chaptersReady(chapters)
+                println(chapters.size.toString() + " chapters read")
+            }
+        })
     }
 }
 

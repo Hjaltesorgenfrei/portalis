@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.portalis.lib.Book
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
@@ -65,10 +66,7 @@ fun Overview(
     when (viewModel.uiState.loading) {
         true -> CenteredLoadingSpinner()
         false -> LazyVerticalGrid(
-            cells = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 16.dp)
+            cells = GridCells.Fixed(2)
         ) {
             items(viewModel.uiState.books) { book ->
                 Cover(book, onClick = {
@@ -85,8 +83,9 @@ private fun Cover(book: Book, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(all = 8.dp)
             .aspectRatio(ratio = 0.75f, matchHeightConstraintsFirst = false)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.BottomStart,
     ) {
