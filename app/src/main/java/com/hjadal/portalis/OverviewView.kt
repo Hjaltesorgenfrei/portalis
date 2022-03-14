@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.portalis.lib.Book
+import com.portalis.lib.NetUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback

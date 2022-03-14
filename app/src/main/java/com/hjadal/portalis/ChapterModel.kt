@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.ViewModel
 import com.portalis.lib.Chapter
+import com.portalis.lib.NetUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
@@ -19,7 +20,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CurrentChapter @Inject constructor() {
-    var chapter : Chapter? = null
+    var chapter: Chapter? = null
 }
 
 data class ChapterUiState(

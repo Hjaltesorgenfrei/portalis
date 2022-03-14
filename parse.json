@@ -1,6 +1,6 @@
 {
-    "book" : "title",
-    "title": "hello",
-    "uri": "hel > qweqqwqsfweqjqsqwewe",
-    "imageUri": "examplqwee"
+    "book" : ".fiction-list-item.row",
+    "title": ".fiction-title",
+    "uri": "a[href]",
+    "imageUri": "img[src]"
 }

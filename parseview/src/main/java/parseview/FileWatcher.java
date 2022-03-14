@@ -1,7 +1,8 @@
 package parseview;
 
+import com.portalis.lib.Book;
+import com.portalis.lib.NetUtil;
 import com.portalis.lib.Parser;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -11,21 +12,27 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 
 public class FileWatcher extends Thread {
     private final File file;
-    public final AtomicBoolean stop = new AtomicBoolean(false);
+    private final AtomicBoolean stop = new AtomicBoolean(false);
+    public String htmlContent;
     private final TreeItem<String> rootItem;
 
     public FileWatcher(File file, TreeItem<String> rootItem) {
         this.file = file;
         this.rootItem = rootItem;
+        try {
+            htmlContent = NetUtil.Companion.get("https://www.royalroad.com/fictions/trending");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        doOnChange();
     }
 
     public boolean isStopped() {
@@ -39,19 +46,25 @@ public class FileWatcher extends Thread {
     public void doOnChange() {
         try {
             var content = new String(Files.readAllBytes(file.toPath()));
-            System.out.println(content);
+            if (content.strip().length() < 2) return;
             var parser = new Parser(content);
-            var bookSelector = parser.getBookSelector();
+            var books = parser.parse(htmlContent);
             Platform.runLater(() -> {
                 rootItem.getChildren().clear();
-                rootItem.getChildren().add(new TreeItem<>(bookSelector.getBook()));
-                rootItem.getChildren().add(new TreeItem<>(bookSelector.getTitle()));
-                rootItem.getChildren().add(new TreeItem<>(bookSelector.getUri()));
-                rootItem.getChildren().add(new TreeItem<>(bookSelector.getImageUri()));
+                addBooks(rootItem, books);
             });
             System.out.println();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void addBooks(TreeItem<String> root, List<Book> books) {
+        for (var book : books) {
+            var bookItem = new TreeItem<>("Title: " + book.getTitle());
+            bookItem.getChildren().add(new TreeItem<>("Uri: " + book.getUri()));
+            bookItem.getChildren().add(new TreeItem<>("ImageUri: " + book.getImageUri()));
+            root.getChildren().add(bookItem);
         }
     }
 

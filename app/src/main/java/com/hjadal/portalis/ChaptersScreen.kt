@@ -24,13 +24,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.portalis.lib.Book
+import com.portalis.lib.Chapter
+import com.portalis.lib.NetUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.jsoup.Jsoup
-import com.portalis.lib.Book
-import com.portalis.lib.Chapter
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
