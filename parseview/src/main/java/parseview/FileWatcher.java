@@ -13,6 +13,7 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
@@ -22,17 +23,23 @@ public class FileWatcher extends Thread {
     private final File file;
     private final AtomicBoolean stop = new AtomicBoolean(false);
     public String htmlContent;
+    private String url;
     private final TreeItem<String> rootItem;
 
     public FileWatcher(File file, TreeItem<String> rootItem) {
         this.file = file;
         this.rootItem = rootItem;
         try {
-            htmlContent = NetUtil.Companion.get("https://www.royalroad.com/fictions/trending");
+            url = Objects.requireNonNull(getParser()).getTopRated();
+            getContent();
         } catch (IOException e) {
             e.printStackTrace();
         }
         doOnChange();
+    }
+
+    private void getContent() throws IOException {
+        htmlContent = NetUtil.Companion.get(url);
     }
 
     public boolean isStopped() {
@@ -45,9 +52,12 @@ public class FileWatcher extends Thread {
 
     public void doOnChange() {
         try {
-            var content = new String(Files.readAllBytes(file.toPath()));
-            if (content.strip().length() < 2) return;
-            var parser = new Parser(content);
+            Parser parser = getParser();
+            if (parser == null) return;
+            if(!parser.getTopRated().equals(url)) {
+                url = Objects.requireNonNull(getParser()).getTopRated();
+                getContent();
+            }
             var books = parser.parse(htmlContent);
             Platform.runLater(() -> {
                 rootItem.getChildren().clear();
@@ -57,6 +67,12 @@ public class FileWatcher extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Parser getParser() throws IOException {
+        var content = new String(Files.readAllBytes(file.toPath()));
+        if (content.strip().length() < 2) return null;
+        return new Parser(content);
     }
 
     private void addBooks(TreeItem<String> root, List<Book> books) {

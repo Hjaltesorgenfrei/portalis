@@ -1,6 +1,10 @@
 {
-    "book" : ".fiction-list-item.row",
-    "title": ".fiction-title",
-    "uri": "a[href]",
-    "imageUri": "img[src]"
+    "baseurl": "https://www.royalroad.com",
+    "topRated": "/fictions/best-rated",
+    "bookSelector": {
+        "selector" : ".fiction-list-item.row",
+        "title": ".fiction-title",
+        "uri": "a[href]",
+        "imageUri": "img[src]"
+    }
 }
