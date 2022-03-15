@@ -3,6 +3,7 @@ package parseview;
 import com.portalis.lib.Book;
 import com.portalis.lib.NetUtil;
 import com.portalis.lib.Parser;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 
@@ -54,11 +56,11 @@ public class FileWatcher extends Thread {
         try {
             Parser parser = getParser();
             if (parser == null) return;
-            if(!parser.getTopRated().equals(url)) {
+            if (!parser.getTopRated().equals(url)) {
                 url = Objects.requireNonNull(getParser()).getTopRated();
                 getContent();
             }
-            var books = parser.parse(htmlContent);
+            var books = parser.parseOverview(htmlContent);
             Platform.runLater(() -> {
                 rootItem.getChildren().clear();
                 addBooks(rootItem, books);

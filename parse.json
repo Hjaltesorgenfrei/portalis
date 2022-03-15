@@ -1,10 +1,18 @@
 {
     "baseurl": "https://www.royalroad.com",
     "topRated": "/fictions/best-rated",
+    "overviewSelector": {
+        "book" : ".fiction-list-item.row",
+        "bookTitle": ".fiction-title",
+        "bookUri": "a[href]",
+        "bookImageUri": "img[src]"
+    },
     "bookSelector": {
-        "selector" : ".fiction-list-item.row",
-        "title": ".fiction-title",
-        "uri": "a[href]",
-        "imageUri": "img[src]"
+        "title": ".fic-title h1",
+        "author": ".fic-title h4 a",
+        "description": "",
+        "imageUri": "",
+        "chapterTitle": "",
+        "chapterDate": ""
     }
 }
