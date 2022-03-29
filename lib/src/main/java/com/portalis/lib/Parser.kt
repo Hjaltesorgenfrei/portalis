@@ -3,6 +3,7 @@ package com.portalis.lib
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.jetbrains.annotations.Nullable
 import org.jsoup.Jsoup
 
 class Parser(input: String) {
@@ -31,20 +32,20 @@ class Parser(input: String) {
         val chapters = doc.select(bookSelector.chapter).toList().mapIndexed { index, e ->
             val chapterTitle = e.select(bookSelector.chapterTitle)[0].text()
             val chapterUri = e.select(bookSelector.chapterUri)[0].attr("href")
-            val chapterDate = e.select(bookSelector.chapterDate)[0].text()
+            val chapterDate = e.select(bookSelector._chapterDate)[0].text()
             Chapter(chapterTitle, chapterUri, index.toString(), chapterDate)
         }
         return Book(title, "", imageUri, chapters)
     }
 
     private val sourceParser: Source = Json.decodeFromString(input)
-    val topRated: String = sourceParser.baseurl + sourceParser.topRated
+    val topRated: String = sourceParser.baseurl + sourceParser._topRated
 }
 
 @Serializable
 class Source(
     val baseurl: String,
-    val topRated: String,
+    val _topRated: String?,
     val overviewSelector: OverviewSelector,
     val bookSelector: BookSelector
 )
@@ -66,5 +67,9 @@ class BookSelector(
     val chapter: String,
     val chapterTitle: String,
     val chapterUri: String,
-    val chapterDate: String
+    val _chapterDate: String?
 )
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.PROPERTY)
+annotation class Required

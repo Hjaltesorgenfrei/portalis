@@ -1,0 +1,61 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "_topRated" : {
+      "type" : "string"
+    },
+    "baseurl" : {
+      "type" : "string"
+    },
+    "bookSelector" : {
+      "type" : "object",
+      "properties" : {
+        "_chapterDate" : {
+          "type" : "string"
+        },
+        "author" : {
+          "type" : "string"
+        },
+        "chapter" : {
+          "type" : "string"
+        },
+        "chapterTitle" : {
+          "type" : "string"
+        },
+        "chapterUri" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "imageUri" : {
+          "type" : "string"
+        },
+        "title" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "author", "chapter", "chapterTitle", "chapterUri", "description", "imageUri", "title" ]
+    },
+    "overviewSelector" : {
+      "type" : "object",
+      "properties" : {
+        "book" : {
+          "type" : "string"
+        },
+        "bookImageUri" : {
+          "type" : "string"
+        },
+        "bookTitle" : {
+          "type" : "string"
+        },
+        "bookUri" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "book", "bookImageUri", "bookTitle", "bookUri" ]
+    }
+  },
+  "required" : [ "baseurl", "bookSelector", "overviewSelector" ]
+}
