@@ -1,4 +1,5 @@
 {
+    "$schema": "./schema.json",
     "baseurl": "https://www.royalroad.com",
     "topRated": "/fictions/best-rated",
     "overviewSelector": {
