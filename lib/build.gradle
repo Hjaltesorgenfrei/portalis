@@ -17,4 +17,5 @@ dependencies {
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.9.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.github.victools:jsonschema-generator:4.23.0")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.20"
 }
