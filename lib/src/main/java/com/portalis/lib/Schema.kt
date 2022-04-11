@@ -1,53 +1,66 @@
 package com.portalis.lib
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.github.victools.jsonschema.generator.OptionPreset
-import com.github.victools.jsonschema.generator.SchemaGenerator
-import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder
-import com.github.victools.jsonschema.generator.SchemaVersion
-import java.io.File
+import org.json.JSONObject
 import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-
+import kotlin.reflect.KProperty
+import kotlin.reflect.full.findAnnotation
 
 object Schema {
-    fun outputSchema(file: File) {
-        val configBuilder =
-            SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_7, OptionPreset.PLAIN_JSON)
-        configBuilder.forFields().withRequiredCheck { field ->
-            !field.member.name.startsWith("_")
-        }
-        val config = configBuilder.build()
-        val generator = SchemaGenerator(config)
-        val jsonSchema: JsonNode = generator.generateSchema(Source::class.java)
-
-        file.writeText(jsonSchema.toPrettyString())
+    fun prettyPrintedSchema() : String {
+        return createSchema().toString(2)
     }
 
-    fun outputCustomSchema() {
-        println("Printing Schema")
-        val objClass = Source::class
-        val constructor = objClass.constructors.filter { c ->
-            !c.parameters.any {
-                    p -> p.name != null && p.name!!.contains("serializationConstructorMarker")
-            }
-        }.first()
-        for (parameter in constructor.parameters) {
-                output(parameter, 0)
-        }
+    private fun createSchema() : JSONObject {
+        val schema = expand(SchemaWrapper::class.fields().first())
+        schema.put("\$schema", "http://json-schema.org/draft-07/schema#")
+        schema.getJSONObject("properties").put("\$schema", SchemaProperty)
+        return schema
     }
 
-    private fun output(parameter: KParameter, depth: Int) {
-        val objClass = parameter.type.classifier as KClass<*>
-        val optional = parameter.type.isMarkedNullable;
-        val constructor = objClass.constructors.filter { c ->
-            !c.parameters.any {
-                    p -> p.name != null && p.name!!.contains("serializationConstructorMarker")
+    val SchemaProperty = run {
+        val j = JSONObject()
+        j.put("type", "string")
+    }
+
+    private class SchemaWrapper(val source: Source)
+
+    private fun KClass<*>.fields(): List<KProperty<*>> {
+        return members.filterIsInstance<KProperty<*>>()
+    }
+
+    private fun KClass<*>.requiredFields(): List<KProperty<*>> {
+        return fields().filter { m -> !m.returnType.isMarkedNullable }
+    }
+
+    private fun expand(prop: KProperty<*>) : JSONObject {
+        val type = prop.returnType
+        val objClass = type.classifier as KClass<*>
+
+        val values = JSONObject()
+        when (objClass) {
+            String::class -> {
+                val pattern = prop.findAnnotation<Pattern>()
+                pattern?.let { p -> values.put("pattern", p.pattern) }
             }
-        }.first()
-        println(" ".repeat(depth) + "${parameter.name} $objClass $optional")
-        for (parameter in constructor.parameters) {
-            output(parameter, depth + 2)
+            else -> {
+                val properties = JSONObject()
+                objClass.fields().forEach { m -> properties.put(m.name, expand(m))}
+                values.put("properties", properties)
+
+                val required = objClass.requiredFields()
+                if (required.any()) {
+                    values.put("required", required.map { f -> f.name})
+                }
+
+                values.put("additionalProperties", false)
+            }
         }
+
+        val typeString = when (objClass) {
+            String::class -> "string"
+            else -> "object"
+        }
+        values.put("type", typeString)
+        return values
     }
 }

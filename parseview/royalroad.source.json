@@ -1,21 +1,21 @@
 {
-    "$schema": "./schema.json",
-    "baseurl": "https://www.royalroad.com",
-    "topRated": "/fictions/best-rated",
-    "overviewSelector": {
-        "book" : ".fiction-list-item.row",
-        "bookTitle": ".fiction-title",
-        "bookUri": "a[href]",
-        "bookImageUri": "img[src]"
-    },
-    "bookSelector": {
-        "title": ".fic-title h1",
-        "author": ".fic-title h4 a",
-        "description": "",
-        "imageUri": "",
-        "chapterTitle": "",
-        "chapterDate": "",
-        "chapter": "",
-        "chapterUri": ""
-    }
+  "$schema": "./schema.json",
+  "baseurl": "https://www.royalroad.com",
+  "topRated": "/fictions/best-rated",
+  "overviewSelector": {
+    "book": ".fiction-list-item.row",
+    "bookTitle": ".fiction-title",
+    "bookUri": "a[href]",
+    "bookImageUri": "img[src]"
+  },
+  "bookSelector": {
+    "title": ".fic-title h1",
+    "author": ".fic-title h4 a",
+    "description": "",
+    "imageUri": "",
+    "chapterTitle": "",
+    "chapter": "",
+    "chapterDate": "",
+    "chapterUri": ""
+  }
 }

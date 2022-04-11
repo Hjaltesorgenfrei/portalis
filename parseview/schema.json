@@ -1,61 +1,57 @@
 {
-  "$schema" : "http://json-schema.org/draft-07/schema#",
-  "type" : "object",
-  "properties" : {
-    "_topRated" : {
-      "type" : "string"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "baseurl": {
+      "pattern": "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+      "type": "string"
     },
-    "baseurl" : {
-      "type" : "string"
-    },
-    "bookSelector" : {
-      "type" : "object",
-      "properties" : {
-        "_chapterDate" : {
-          "type" : "string"
-        },
-        "author" : {
-          "type" : "string"
-        },
-        "chapter" : {
-          "type" : "string"
-        },
-        "chapterTitle" : {
-          "type" : "string"
-        },
-        "chapterUri" : {
-          "type" : "string"
-        },
-        "description" : {
-          "type" : "string"
-        },
-        "imageUri" : {
-          "type" : "string"
-        },
-        "title" : {
-          "type" : "string"
-        }
+    "topRated": {"type": "string"},
+    "$schema": {"type": "string"},
+    "bookSelector": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "chapterDate": {"type": "string"},
+        "chapter": {"type": "string"},
+        "imageUri": {"type": "string"},
+        "author": {"type": "string"},
+        "chapterUri": {"type": "string"},
+        "description": {"type": "string"},
+        "chapterTitle": {"type": "string"},
+        "title": {"type": "string"}
       },
-      "required" : [ "author", "chapter", "chapterTitle", "chapterUri", "description", "imageUri", "title" ]
+      "required": [
+        "author",
+        "chapter",
+        "chapterTitle",
+        "chapterUri",
+        "description",
+        "imageUri",
+        "title"
+      ]
     },
-    "overviewSelector" : {
-      "type" : "object",
-      "properties" : {
-        "book" : {
-          "type" : "string"
-        },
-        "bookImageUri" : {
-          "type" : "string"
-        },
-        "bookTitle" : {
-          "type" : "string"
-        },
-        "bookUri" : {
-          "type" : "string"
-        }
+    "overviewSelector": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "bookImageUri": {"type": "string"},
+        "book": {"type": "string"},
+        "bookUri": {"type": "string"},
+        "bookTitle": {"type": "string"}
       },
-      "required" : [ "book", "bookImageUri", "bookTitle", "bookUri" ]
+      "required": [
+        "book",
+        "bookImageUri",
+        "bookTitle",
+        "bookUri"
+      ]
     }
   },
-  "required" : [ "baseurl", "bookSelector", "overviewSelector" ]
+  "required": [
+    "baseurl",
+    "bookSelector",
+    "overviewSelector"
+  ]
 }
