@@ -11,11 +11,11 @@
   "bookSelector": {
     "title": ".fic-title h1",
     "author": ".fic-title h4 a",
-    "description": "",
-    "imageUri": "",
-    "chapterTitle": "",
-    "chapter": "",
-    "chapterDate": "",
-    "chapterUri": ""
+    "description": "a",
+    "imageUri": "img.thumbnail[src]",
+    "chapterTitle": "a",
+    "chapter": ".chapter-row",
+    "chapterDate": "time",
+    "chapterUri": "a"
   }
 }

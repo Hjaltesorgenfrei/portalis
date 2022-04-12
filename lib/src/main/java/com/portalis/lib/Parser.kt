@@ -37,7 +37,9 @@ class Parser(input: String) {
         return Book(title, "", imageUri, chapters)
     }
 
-    private val sourceParser: Source = Json.decodeFromString(input)
+    private val jsonFormat: Json = Json { ignoreUnknownKeys = true }
+
+    private val sourceParser: Source = jsonFormat.decodeFromString(input)
     val topRated: String = sourceParser.baseurl + sourceParser.topRated
 }
 

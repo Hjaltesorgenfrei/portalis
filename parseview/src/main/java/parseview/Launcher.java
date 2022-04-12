@@ -2,7 +2,6 @@ package parseview;
 
 import com.portalis.lib.Schema;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -13,5 +12,6 @@ public class Launcher {
         var file = new FileWriter("schema.json");
         file.write(Schema.INSTANCE.prettyPrintedSchema());
         file.flush();
+        App.main(args);
     }
 }

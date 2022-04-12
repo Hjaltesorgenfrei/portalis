@@ -1,5 +1,7 @@
 package parseview;
 
+import java.io.File;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -15,6 +17,7 @@ public class App extends Application {
         var root = new TreeItem<String>();
         var fileWatcher = startFileWatcher(stage, root);
         var tree = new TreeView<>(root);
+        tree.setCellFactory(e -> new CustomCell(fileWatcher));
         tree.setShowRoot(false);
         Scene scene = new Scene(tree, 640, 480);
         stage.setScene(scene);
@@ -27,6 +30,7 @@ public class App extends Application {
 
     private FileWatcher startFileWatcher(Stage stage, TreeItem<String> rootItem) {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File("."));
         fileChooser.setTitle("Open Resource File");
         var file = fileChooser.showOpenDialog(stage);
         if (file == null) {

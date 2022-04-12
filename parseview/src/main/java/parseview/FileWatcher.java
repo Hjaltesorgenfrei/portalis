@@ -25,14 +25,15 @@ public class FileWatcher extends Thread {
     private final File file;
     private final AtomicBoolean stop = new AtomicBoolean(false);
     public String htmlContent;
-    private String url;
+    private String topRatedUrl;
+    private String bookUrl = null;
     private final TreeItem<String> rootItem;
 
     public FileWatcher(File file, TreeItem<String> rootItem) {
         this.file = file;
         this.rootItem = rootItem;
         try {
-            url = Objects.requireNonNull(getParser()).getTopRated();
+            topRatedUrl = Objects.requireNonNull(getParser()).getTopRated();
             getContent();
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,7 +42,11 @@ public class FileWatcher extends Thread {
     }
 
     private void getContent() throws IOException {
-        htmlContent = NetUtil.Companion.get(url);
+        if (bookUrl != null) {
+            htmlContent = NetUtil.Companion.get(bookUrl);
+            return;
+        }
+        htmlContent = NetUtil.Companion.get(topRatedUrl);
     }
 
     public boolean isStopped() {
@@ -56,19 +61,48 @@ public class FileWatcher extends Thread {
         try {
             Parser parser = getParser();
             if (parser == null) return;
-            if (!parser.getTopRated().equals(url)) {
-                url = Objects.requireNonNull(getParser()).getTopRated();
+            if (!parser.getTopRated().equals(topRatedUrl)) {
+                topRatedUrl = Objects.requireNonNull(getParser()).getTopRated();
                 getContent();
             }
-            var books = parser.parseOverview(htmlContent);
-            Platform.runLater(() -> {
-                rootItem.getChildren().clear();
-                addBooks(rootItem, books);
-            });
+            if (bookUrl != null) {
+                extractChapters(parser);
+            }
+            else {
+                extractBooks(parser);
+            }
             System.out.println();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void extractChapters(Parser parser) {
+        var book = parser.parseBook(htmlContent);
+        Platform.runLater(() -> {
+            rootItem.getChildren().clear();
+            addBook(rootItem, book);
+        });
+    }
+
+    private void addBook(TreeItem<String> root, Book book) {
+        root.getChildren().add(new TreeItem<>(book.getTitle()));
+        root.getChildren().add(new TreeItem<>(book.getImageUri()));
+        root.getChildren().add(new TreeItem<>(book.getUri()));
+        for (var chapter : book.getChapters()) {
+            var bookItem = new TreeItem<>("Title: " + chapter.getTitle());
+            bookItem.getChildren().add(new TreeItem<>("ChapterUri: " + chapter.getUri()));
+            bookItem.getChildren().add(new TreeItem<>("ChapterDate: " + chapter.getDate()));
+            root.getChildren().add(bookItem);
+        }
+    }
+
+    private void extractBooks(Parser parser) {
+        var books = parser.parseOverview(htmlContent);
+        Platform.runLater(() -> {
+            rootItem.getChildren().clear();
+            addBooks(rootItem, books);
+        });
     }
 
     private Parser getParser() throws IOException {
@@ -80,7 +114,7 @@ public class FileWatcher extends Thread {
     private void addBooks(TreeItem<String> root, List<Book> books) {
         for (var book : books) {
             var bookItem = new TreeItem<>("Title: " + book.getTitle());
-            bookItem.getChildren().add(new TreeItem<>("Uri: " + book.getUri()));
+            bookItem.getChildren().add(new TreeItem<>("BookUri: " + book.getUri()));
             bookItem.getChildren().add(new TreeItem<>("ImageUri: " + book.getImageUri()));
             root.getChildren().add(bookItem);
         }
@@ -125,7 +159,18 @@ public class FileWatcher extends Thread {
                 Thread.yield();
             }
         } catch (Throwable e) {
-            // Log or rethrow the error
+            e.printStackTrace();
         }
     }
+
+    public void switchToChapterView(String bookUrl) {
+        this.bookUrl = bookUrl;
+        try {
+            getContent();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        doOnChange();
+    }
 }
+

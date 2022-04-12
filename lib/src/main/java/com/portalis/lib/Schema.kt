@@ -17,7 +17,7 @@ object Schema {
         return schema
     }
 
-    val SchemaProperty = run {
+    private val SchemaProperty: JSONObject = run {
         val j = JSONObject()
         j.put("type", "string")
     }
