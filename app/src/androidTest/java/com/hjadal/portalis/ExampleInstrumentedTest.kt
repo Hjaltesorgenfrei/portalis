@@ -1,24 +1,50 @@
 package com.hjadal.portalis
 
+import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.hjadal.portalis.database.SourceDatabase
+import com.hjadal.portalis.database.SourceDatabaseDao
+import com.hjadal.portalis.database.SourceItem
+import kotlinx.coroutines.runBlocking
+import org.junit.After
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
+import org.junit.Before
+import java.io.IOException
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+class TodoDatabaseTest {
+
+    private lateinit var sourceDao: SourceDatabaseDao
+    private lateinit var db: SourceDatabase
+
+    @Before
+    fun createDb() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+        db = Room.inMemoryDatabaseBuilder(context, SourceDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+
+        sourceDao = db.sourceDao()
+    }
+
+    @After
+    @Throws(IOException::class)
+    fun deleteDb() {
+        db.close()
+    }
+
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.hjadal.portalis", appContext.packageName)
+    @Throws(Exception::class)
+    fun insertAndGetTodo() = runBlocking {
+        val todoItem = SourceItem(itemId = 1, itemName = "Dummy Item")
+        sourceDao.insert(todoItem)
+        val oneItem = sourceDao.getById(1)
+        assertEquals(1L, oneItem?.itemId)
     }
 }

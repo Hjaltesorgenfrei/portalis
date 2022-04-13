@@ -69,7 +69,7 @@ fun Overview(
     when (viewModel.uiState.loading) {
         true -> CenteredLoadingSpinner()
         false -> LazyVerticalGrid(
-            cells = GridCells.Fixed(2)
+            cells = GridCells.Fixed(2),
         ) {
             items(viewModel.uiState.books) { book ->
                 Cover(book, onClick = {
