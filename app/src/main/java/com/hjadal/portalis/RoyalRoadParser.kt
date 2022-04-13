@@ -1,5 +1,10 @@
+package com.hjadal.portalis
+
+import com.portalis.lib.Parser
+import javax.inject.Inject
+
+private const val source = """
 {
-  "$schema": "./schema.json",
   "baseurl": "https://www.royalroad.com",
   "topRated": "/fictions/best-rated",
   "overviewSelector": {
@@ -18,4 +23,10 @@
     "chapterDate": "time",
     "chapterUri": "a"
   }
+}
+
+"""
+
+class RoyalRoadParser @Inject constructor() {
+    public val parser = Parser(source)
 }

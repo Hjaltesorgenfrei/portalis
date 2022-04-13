@@ -27,6 +27,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.portalis.lib.Book
 import com.portalis.lib.NetUtil
+import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
@@ -43,7 +44,8 @@ data class OverviewUiState(
 
 @HiltViewModel
 class OverviewModel @Inject constructor(
-    val currentBook: CurrentBook
+    val currentBook: CurrentBook,
+    private val royalRoadParser: RoyalRoadParser
 ) : ViewModel() {
 
     fun booksReady(books: List<Book>) {
@@ -54,7 +56,7 @@ class OverviewModel @Inject constructor(
         private set
 
     init {
-        loadBooks(this)
+        loadBooks(this, royalRoadParser.parser)
     }
 }
 
@@ -118,25 +120,18 @@ private fun Cover(book: Book, onClick: () -> Unit) {
     }
 }
 
-private fun loadBooks(viewModel: OverviewModel) {
-    NetUtil.run("https://www.royalroad.com/fictions/trending", object : Callback {
+private fun loadBooks(viewModel: OverviewModel, parser: Parser) {
+
+    NetUtil.run(parser.topRated, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()
         }
 
         override fun onResponse(call: Call, response: Response) {
-            val result = response.body?.string()
-            val doc = Jsoup.parse(result as String)
-            val elements = doc.getElementsByClass("fiction-list-item row")
-            val books = elements.toList()
-                .map { e ->
-                    val title = e.getElementsByClass("fiction-title")[0]
-                    val href = title.getElementsByAttribute("href")[0].attr("href")
-                    val uri = "https://www.royalroad.com$href"
-                    val imageUri = e.getElementsByTag("img")[0].attr("src")
-                    Book(title.text(), uri, imageUri)
-                }
-            viewModel.booksReady(books)
+            response.body?.let { r ->
+                val books = parser.parseOverview(r.string())
+                viewModel.booksReady(books)
+            }
         }
     })
 }

@@ -34,13 +34,19 @@ class Parser(input: String) {
             val chapterDate = e.select(bookSelector.chapterDate)[0].text()
             Chapter(chapterTitle, chapterUri, index.toString(), chapterDate)
         }
-        return Book(title, "", imageUri, chapters)
+        return Book(title, "", imageUri, chapters, author, description)
     }
 
     private val jsonFormat: Json = Json { ignoreUnknownKeys = true }
 
     private val sourceParser: Source = jsonFormat.decodeFromString(input)
     val topRated: String = sourceParser.baseurl + sourceParser.topRated
+    fun chapter(path: String): String {
+        if (path.startsWith("/")) {
+            return sourceParser.baseurl + path
+        }
+        return path
+    }
 }
 
 @Serializable

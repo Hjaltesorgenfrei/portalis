@@ -7,6 +7,7 @@ import androidx.core.text.HtmlCompat
 import androidx.lifecycle.ViewModel
 import com.portalis.lib.Chapter
 import com.portalis.lib.NetUtil
+import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
@@ -29,7 +30,10 @@ data class ChapterUiState(
 )
 
 @HiltViewModel
-class ChapterModel @Inject constructor(currentChapter: CurrentChapter) : ViewModel() {
+class ChapterModel @Inject constructor(
+    currentChapter: CurrentChapter,
+    private val royalRoadParser: RoyalRoadParser
+) : ViewModel() {
     fun chapterReady(chapterContent: String) {
         uiState = ChapterUiState(chapterContent, false)
     }
@@ -38,12 +42,12 @@ class ChapterModel @Inject constructor(currentChapter: CurrentChapter) : ViewMod
         private set
 
     init {
-        currentChapter.chapter?.let { loadChapter(it.uri, this) }
+        currentChapter.chapter?.let { loadChapter(it.uri, this, royalRoadParser.parser) }
     }
 }
 
-private fun loadChapter(encodedUri: String, viewModel: ChapterModel) {
-    val uri = URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString())
+private fun loadChapter(encodedUri: String, viewModel: ChapterModel, parser: Parser) {
+    val uri = parser.chapter(URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString()))
     NetUtil.run(uri, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()

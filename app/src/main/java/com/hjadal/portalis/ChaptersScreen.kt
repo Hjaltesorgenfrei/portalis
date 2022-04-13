@@ -1,22 +1,28 @@
 package com.hjadal.portalis
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,22 +30,23 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.portalis.lib.Book
-import com.portalis.lib.Chapter
 import com.portalis.lib.NetUtil
+import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
-import org.jsoup.Jsoup
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
+val MINIMIZED_MAX_LINES: Int = 4
+
 internal data class BookUiState(
-    val chapters: List<Chapter> = emptyList(),
-    val loading: Boolean = true
+    val book: Book? = null
 )
 
 @Singleton
@@ -50,11 +57,12 @@ class CurrentBook @Inject constructor() {
 @HiltViewModel
 class BookModel @Inject constructor(
     private val currentBook: CurrentBook,
-    val currentChapter: CurrentChapter
+    val currentChapter: CurrentChapter,
+    private val parser: RoyalRoadParser
 ) : ViewModel() {
 
-    fun chaptersReady(chapters: List<Chapter>) {
-        uiState = BookUiState(chapters, false)
+    fun bookReady(book: Book) {
+        uiState = BookUiState(book)
     }
 
     internal var uiState by mutableStateOf(BookUiState())
@@ -63,7 +71,7 @@ class BookModel @Inject constructor(
     val url = currentBook.book?.uri
 
     init {
-        loadChapters(this)
+        loadChapters(this, parser.parser)
     }
 }
 
@@ -72,13 +80,13 @@ fun BookScreen(
     navController: NavHostController,
     viewModel: BookModel = hiltViewModel()
 ) {
-    when (viewModel.uiState.loading) {
-        true -> CenteredLoadingSpinner()
-        false -> ChaptersScreen(navController)
+    when (viewModel.uiState.book) {
+        null -> CenteredLoadingSpinner()
+        else -> ChaptersScreen(navController, viewModel.uiState.book!!)
     }
 }
 
-private fun loadChapters(viewModel: BookModel) {
+private fun loadChapters(viewModel: BookModel, parser: Parser) {
     viewModel.url?.let {
         NetUtil.run(it, object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -86,39 +94,51 @@ private fun loadChapters(viewModel: BookModel) {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val result = response.body?.string()
-                val doc = Jsoup.parse(result as String)
-                val elements = doc.getElementsByClass("chapter-row")
-                val chapters = elements.toList()
-                    .map { e ->
-                        val title = e.getElementsByTag("a")[0].text()
-                        val uri = "https://www.royalroad.com" + e.attr("data-url")
-                        val number =
-                            e.getElementsByAttribute("data-content")[0].attr("data-content")
-                        Chapter(title, uri, number)
-                    }
-                viewModel.chaptersReady(chapters)
-                println(chapters.size.toString() + " chapters read")
+                response.body?.let { r ->
+                    val book = parser.parseBook(r.string())
+                    viewModel.bookReady(book)
+                }
             }
         })
     }
 }
 
 @Composable
-private fun HeaderView() {
-    Icon(Icons.Filled.Download, "Info", Modifier.size(100.dp))
+private fun HeaderView(book: Book) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AsyncImage(
+            model = book.imageUri,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .width(128.dp)
+                .padding(all = 16.dp)
+                .aspectRatio(ratio = 0.75f, matchHeightConstraintsFirst = false)
+                .clip(RoundedCornerShape(8.dp))
+        )
+        Column(verticalArrangement = Arrangement.Center) {
+            Text(
+                text = book.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
+            Text(text = book.author, fontWeight = FontWeight.Bold)
+        }
+    }
+    ExpandingText(text = book.description, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
 }
 
 @Composable
 private fun ChaptersScreen(
     navController: NavController,
+    book: Book,
     viewModel: BookModel = hiltViewModel()
 ) {
     LazyColumn {
         item {
-            HeaderView()
+            HeaderView(book)
         }
-        items(viewModel.uiState.chapters) { chapter ->
+        items(book.chapters) { chapter ->
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -150,3 +170,60 @@ private fun ChaptersScreen(
     }
 }
 
+@Composable
+fun ExpandingText(modifier: Modifier = Modifier, text: String) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val textLayoutResultState = remember { mutableStateOf<TextLayoutResult?>(null) }
+    var isClickable by remember { mutableStateOf(false) }
+    var finalText by remember { mutableStateOf(text) }
+
+    val textLayoutResult = textLayoutResultState.value
+    LaunchedEffect(textLayoutResult) {
+        if (textLayoutResult == null) return@LaunchedEffect
+
+        when {
+            isExpanded -> {
+                finalText = text
+            }
+            !isExpanded && textLayoutResult.hasVisualOverflow -> {
+                val lastCharIndex = textLayoutResult.getLineEnd(MINIMIZED_MAX_LINES - 1)
+                finalText = text
+                    .substring(startIndex = 0, endIndex = lastCharIndex)
+                    .dropLastWhile { it == ' ' || it == '.' }
+
+
+                isClickable = true
+
+            }
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Text(
+            text = finalText,
+            maxLines = if (isExpanded) Int.MAX_VALUE else MINIMIZED_MAX_LINES,
+            onTextLayout = { textLayoutResultState.value = it },
+            modifier = modifier
+                .clickable(enabled = isClickable) { isExpanded = !isExpanded }
+                .animateContentSize(),
+        )
+        if (!isExpanded) {
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colors.background
+                            )
+                        )
+                    )
+            )
+            Icon(Icons.Filled.ExpandMore, "Expand")
+        }
+    }
+}
