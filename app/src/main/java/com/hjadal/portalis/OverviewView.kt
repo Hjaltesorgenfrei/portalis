@@ -4,15 +4,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,17 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.portalis.lib.Book
-import com.portalis.lib.NetUtil
-import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
-import org.jsoup.Jsoup
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -45,19 +39,14 @@ data class OverviewUiState(
 @HiltViewModel
 class OverviewModel @Inject constructor(
     val currentBook: CurrentBook,
-    private val royalRoadParser: RoyalRoadParser
+    private val royalRoadParser: RoyalRoadParser,
+    private val pager: BookPager
 ) : ViewModel() {
 
-    fun booksReady(books: List<Book>) {
-        uiState = OverviewUiState(books, false)
-    }
-
-    var uiState by mutableStateOf(OverviewUiState())
-        private set
-
-    init {
-        loadBooks(this, royalRoadParser.parser)
-    }
+    val books = Pager(
+                    config = PagingConfig(pageSize = 20, prefetchDistance = 2),
+                    pagingSourceFactory = { BookPager(royalRoadParser) }
+                ).flow.cachedIn(viewModelScope)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -66,18 +55,33 @@ fun Overview(
     navController: NavHostController,
     viewModel: OverviewModel = hiltViewModel()
 ) {
-    when (viewModel.uiState.loading) {
-        true -> CenteredLoadingSpinner()
-        false -> LazyVerticalGrid(
+    val listState: LazyListState = rememberLazyListState()
+    val books: LazyPagingItems<Book> = viewModel.books.collectAsLazyPagingItems()
+    when (books.itemCount) {
+        0 -> CenteredLoadingSpinner()
+        else -> LazyVerticalGrid(
+            state = listState,
             cells = GridCells.Fixed(2),
         ) {
-            items(viewModel.uiState.books) { book ->
-                Cover(book, onClick = {
-                    viewModel.currentBook.book = book
-                    navController.navigate("book_screen")
-                })
+            items(books) { book ->
+                book?.let { b ->
+                    Cover(b, onClick = {
+                        viewModel.currentBook.book = book
+                        navController.navigate("book_screen")
+                    })
+                }
             }
         }
+    }
+}
+
+@ExperimentalFoundationApi
+public fun <T: Any> LazyGridScope.items(
+    lazyPagingItems: LazyPagingItems<T>,
+    itemContent: @Composable LazyItemScope.(value: T?) -> Unit
+) {
+    items(lazyPagingItems.itemCount) { index ->
+        itemContent(lazyPagingItems[index])
     }
 }
 
@@ -118,20 +122,4 @@ private fun Cover(book: Book, onClick: () -> Unit) {
             fontSize = 16.sp,
         )
     }
-}
-
-private fun loadBooks(viewModel: OverviewModel, parser: Parser) {
-
-    NetUtil.run(parser.topRated, object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            e.printStackTrace()
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.body?.let { r ->
-                val books = parser.parseOverview(r.string())
-                viewModel.booksReady(books)
-            }
-        }
-    })
 }
