@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=schema.json
+baseurl: https://www.royalroad.com
+topRated: "/fictions/best-rated"
+overviewSelector:
+  book: ".fiction-list-item.row"
+  bookTitle: ".fiction-title"
+  bookUri: a[href]
+  bookImageUri: img[src]
+bookSelector:
+  title: ".fic-title h1"
+  author: ".fic-title h4 a"
+  description: ".description"
+  imageUri: img.thumbnail[src]
+  chapterTitle: a
+  chapter: ".chapter-row"
+  chapterUri: "a"
