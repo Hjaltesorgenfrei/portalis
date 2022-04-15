@@ -56,6 +56,7 @@ class BookPager @Inject constructor(
 
 
 private fun loadBooks(page: Int, parser: Parser): List<Book> {
-    val result = NetUtil.get(parser.topRated + "?page=$page")
+    val url = parser.getTopRatedPage(page)
+    val result = NetUtil.get(url)
     return (result?.let { parser.parseOverview(it) } ?: emptyList())
 }

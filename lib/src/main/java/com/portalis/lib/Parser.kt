@@ -40,12 +40,17 @@ class Parser(input: String) {
     private val jsonFormat: Json = Json { ignoreUnknownKeys = true }
 
     private val sourceParser: Source = jsonFormat.decodeFromString(input)
-    val topRated: String = sourceParser.baseurl + sourceParser.topRated
     fun chapter(path: String): String {
         if (path.startsWith("/")) {
             return sourceParser.baseurl + path
         }
         return path
+    }
+
+    fun getTopRatedPage(pageNumber: Int): String {
+        val queryString = sourceParser.topRated?.queryString
+        return sourceParser.baseurl +
+                (queryString?.replace("{{pageNumber}}", pageNumber.toString()))
     }
 }
 
@@ -53,9 +58,16 @@ class Parser(input: String) {
 class Source(
     @property:Pattern(UrlPattern)
     val baseurl: String,
-    val topRated: String?,
+    val topRated: PaginationDefinition?,
     val overviewSelector: OverviewSelector,
     val bookSelector: BookSelector
+)
+
+@Serializable
+class PaginationDefinition (
+    @property:Pattern("{{pageNumber}}")
+    val queryString: String,
+    val startPage: Int
 )
 
 @Serializable

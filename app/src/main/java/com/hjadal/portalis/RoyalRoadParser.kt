@@ -6,7 +6,10 @@ import javax.inject.Inject
 private const val source = """
 {
   "baseurl": "https://www.royalroad.com",
-  "topRated": "/fictions/best-rated",
+  "topRated":{
+    "queryString": "/fictions/best-rated?page={{pageNumber}}",
+    "startPage": 1
+  },
   "overviewSelector": {
     "book": ".fiction-list-item.row",
     "bookTitle": ".fiction-title",
@@ -24,7 +27,6 @@ private const val source = """
     "chapterUri": "a"
   }
 }
-
 """
 
 class RoyalRoadParser @Inject constructor() {

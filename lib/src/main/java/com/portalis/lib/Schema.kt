@@ -42,6 +42,7 @@ object Schema {
                 val pattern = prop.findAnnotation<Pattern>()
                 pattern?.let { p -> values.put("pattern", p.pattern) }
             }
+            Int::class -> {}
             else -> {
                 val properties = JSONObject()
                 objClass.fields().forEach { m -> properties.put(m.name, expand(m))}
@@ -58,6 +59,7 @@ object Schema {
 
         val typeString = when (objClass) {
             String::class -> "string"
+            Int::class -> "integer"
             else -> "object"
         }
         values.put("type", typeString)

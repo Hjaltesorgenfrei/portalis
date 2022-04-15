@@ -33,7 +33,7 @@ public class FileWatcher extends Thread {
         this.file = file;
         this.rootItem = rootItem;
         try {
-            topRatedUrl = Objects.requireNonNull(getParser()).getTopRated();
+            topRatedUrl = Objects.requireNonNull(getParser()).getTopRatedPage(1);
             getContent();
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,8 +61,8 @@ public class FileWatcher extends Thread {
         try {
             Parser parser = getParser();
             if (parser == null) return;
-            if (!parser.getTopRated().equals(topRatedUrl)) {
-                topRatedUrl = Objects.requireNonNull(getParser()).getTopRated();
+            if (!parser.getTopRatedPage(1).equals(topRatedUrl)) {
+                topRatedUrl = Objects.requireNonNull(getParser()).getTopRatedPage(1);
                 getContent();
             }
             if (bookUrl != null) {

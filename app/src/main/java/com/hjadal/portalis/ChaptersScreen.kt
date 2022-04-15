@@ -145,6 +145,10 @@ private fun ChaptersScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
+                    .clickable {
+                        viewModel.currentChapter.chapter = chapter
+                        navController.navigate("read_chapter")
+                    }
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -161,8 +165,7 @@ private fun ChaptersScreen(
                         .size(48.dp)
                         .clip(CircleShape)
                         .clickable {
-                            viewModel.currentChapter.chapter = chapter
-                            navController.navigate("read_chapter")
+                            println("Download: ${chapter.title}")
                         }
                         .padding(8.dp))
             }
