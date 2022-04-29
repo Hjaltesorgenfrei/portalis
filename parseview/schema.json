@@ -2,6 +2,34 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "type": "object",
+  "definitions": {
+    "com.portalis.lib.TextValueSelector": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "selector": {"type": "string"},
+        "type": {"const": "com.portalis.lib.TextValueSelector"}
+      },
+      "required": [
+        "selector",
+        "type"
+      ]
+    },
+    "com.portalis.lib.AttributeValueSelector": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "selector": {"type": "string"},
+        "attribute": {"type": "string"},
+        "type": {"const": "com.portalis.lib.AttributeValueSelector"}
+      },
+      "required": [
+        "attribute",
+        "selector",
+        "type"
+      ]
+    }
+  },
   "properties": {
     "baseurl": {
       "format": "uri",
@@ -53,7 +81,10 @@
       "properties": {
         "bookImageUri": {"type": "string"},
         "book": {"type": "string"},
-        "bookUri": {"type": "string"},
+        "bookUri": {"oneOf": [
+          {"$ref": "#/definitions/com.portalis.lib.TextValueSelector"},
+          {"$ref": "#/definitions/com.portalis.lib.AttributeValueSelector"}
+        ]},
         "bookTitle": {"type": "string"}
       },
       "required": [

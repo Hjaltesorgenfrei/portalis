@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 class Parser(input: String) {
     fun parseOverview(htmlContent: String): List<Book> {
@@ -17,7 +18,7 @@ class Parser(input: String) {
         val books = elements.toList()
             .map { e ->
                 val title = e.select(overviewSelector.bookTitle)[0].text()
-                val href = e.select(overviewSelector.bookUri)[0].attr("href")
+                val href = overviewSelector.bookUri.selectAndGet(e)
                 val uri = "${sourceParser.baseurl}${href}"
                 val imageUri = e.select(overviewSelector.bookImageUri)[0].attr("src")
                 Book(title, uri, imageUri)
@@ -79,9 +80,37 @@ class PaginationDefinition(
 class OverviewSelector(
     val book: String,
     val bookTitle: String,
-    val bookUri: String,
+    val bookUri: ElementValueSelector,
     val bookImageUri: String
 )
+
+@Serializable
+sealed class ElementValueSelector() {
+    abstract val selector: String
+    abstract fun getValue(element: Element) : String
+    fun selectAndGet(parentElement: Element) : String {
+        return getValue(parentElement.select(selector)[0])
+    }
+}
+
+@Serializable
+class TextValueSelector(
+    override val selector: String
+) : ElementValueSelector() {
+    override fun getValue(element: Element): String {
+        return element.text()
+    }
+}
+
+@Serializable
+class AttributeValueSelector(
+    override val selector: String,
+    val attribute: String
+) : ElementValueSelector() {
+    override fun getValue(element: Element): String {
+        return element.attr(attribute)
+    }
+}
 
 @Serializable
 class BookSelector(

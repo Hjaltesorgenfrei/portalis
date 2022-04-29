@@ -12,9 +12,16 @@ object Schema {
     }
 
     private fun createSchema(): JSONObject {
-        val schema = expand(SchemaWrapper::class.fields().first())
+        val definitions: MutableMap<String, KClass<*>> = mutableMapOf()
+        val schema = expandClass(Source::class, definitions)
         schema.put("\$schema", "http://json-schema.org/draft-07/schema#")
         schema.getJSONObject("properties").put("\$schema", SchemaProperty)
+
+        val outDefinitions = JSONObject()
+        for ((name, definition) in definitions) {
+            outDefinitions.put(name, expandClass(definition, definitions))
+        }
+        schema.put("definitions", outDefinitions)
         return schema
     }
 
@@ -22,8 +29,6 @@ object Schema {
         val j = JSONObject()
         j.put("type", "string")
     }
-
-    private class SchemaWrapper(val source: Source)
 
     private fun KClass<*>.fields(): List<KProperty<*>> {
         return members.filterIsInstance<KProperty<*>>()
@@ -33,30 +38,66 @@ object Schema {
         return fields().filter { m -> !m.returnType.isMarkedNullable }
     }
 
-    private fun expand(prop: KProperty<*>): JSONObject {
-        val type = prop.returnType
-        val objClass = type.classifier as KClass<*>
-
-        val values = JSONObject()
+    private fun expandProp(
+        prop: KProperty<*>,
+        definitions: MutableMap<String, KClass<*>>
+    ): JSONObject {
+        val objClass = prop.returnType.classifier as KClass<*>
+        val values = expandClass(objClass, definitions)
 
         prop.findAnnotation<Comment>()?.let { values.put("\$comment", it.value) }
-
         when (objClass) {
             String::class -> {
                 prop.findAnnotation<Pattern>()?.let { values.put("pattern", it.pattern) }
                 prop.findAnnotation<Format>()?.let { values.put("format", it.format.jsonValue) }
             }
+        }
+        return values
+    }
+
+    private fun expandClass(
+        objClass: KClass<*>,
+        definitions: MutableMap<String, KClass<*>>
+    ): JSONObject {
+
+        val values = JSONObject()
+
+
+        when (objClass.isSealed) {
+            false -> expandNormal(objClass, values, definitions)
+            true -> expandSealed(objClass, values, definitions)
+        }
+
+        return values
+    }
+
+    private fun expandNormal(
+        objClass: KClass<*>,
+        values: JSONObject,
+        definitions: MutableMap<String, KClass<*>>
+    ) {
+
+        when (objClass) {
+            String::class -> {}
             Int::class -> {}
             else -> {
+                val isDefinition = definitions.values.contains(objClass)
+                val requiredFields = objClass.requiredFields().map { f -> f.name }.toMutableList()
                 val properties = JSONObject()
-                objClass.fields().forEach { m -> properties.put(m.name, expand(m)) }
-                values.put("properties", properties)
+                objClass.fields()
+                    .forEach { m -> properties.put(m.name, expandProp(m, definitions)) }
 
-                val required = objClass.requiredFields()
-                if (required.any()) {
-                    values.put("required", required.map { f -> f.name })
+                if (isDefinition) {
+                    requiredFields.add("type")
+                    val constObject = JSONObject()
+                    constObject.put("const", objClass.qualifiedName)
+                    properties.put("type", constObject)
                 }
 
+                values.put("properties", properties)
+                if (requiredFields.any()) {
+                    values.put("required", requiredFields)
+                }
                 values.put("additionalProperties", false)
             }
         }
@@ -67,6 +108,22 @@ object Schema {
             else -> "object"
         }
         values.put("type", typeString)
-        return values
+    }
+
+    private fun expandSealed(
+        objClass: KClass<*>,
+        values: JSONObject,
+        definitions: MutableMap<String, KClass<*>>
+    ) {
+        val references = mutableListOf<JSONObject>()
+        objClass.sealedSubclasses.forEach {
+            val name = it.qualifiedName!!
+            val jsonObject = JSONObject()
+            jsonObject.put("\$ref", "#/definitions/$name")
+            references.add(jsonObject)
+
+            definitions[name] = it
+        }
+        values.put("oneOf", references)
     }
 }
