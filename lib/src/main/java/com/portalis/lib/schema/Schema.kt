@@ -1,16 +1,17 @@
-package com.portalis.lib
+package com.portalis.lib.schema
 
+import com.portalis.lib.Source
 import org.json.JSONObject
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 
 object Schema {
-    fun prettyPrintedSchema() : String {
+    fun prettyPrintedSchema(): String {
         return createSchema().toString(2)
     }
 
-    private fun createSchema() : JSONObject {
+    private fun createSchema(): JSONObject {
         val schema = expand(SchemaWrapper::class.fields().first())
         schema.put("\$schema", "http://json-schema.org/draft-07/schema#")
         schema.getJSONObject("properties").put("\$schema", SchemaProperty)
@@ -32,7 +33,7 @@ object Schema {
         return fields().filter { m -> !m.returnType.isMarkedNullable }
     }
 
-    private fun expand(prop: KProperty<*>) : JSONObject {
+    private fun expand(prop: KProperty<*>): JSONObject {
         val type = prop.returnType
         val objClass = type.classifier as KClass<*>
 
@@ -48,12 +49,12 @@ object Schema {
             Int::class -> {}
             else -> {
                 val properties = JSONObject()
-                objClass.fields().forEach { m -> properties.put(m.name, expand(m))}
+                objClass.fields().forEach { m -> properties.put(m.name, expand(m)) }
                 values.put("properties", properties)
 
                 val required = objClass.requiredFields()
                 if (required.any()) {
-                    values.put("required", required.map { f -> f.name})
+                    values.put("required", required.map { f -> f.name })
                 }
 
                 values.put("additionalProperties", false)

@@ -1,6 +1,8 @@
 package parseview;
 
-import com.portalis.lib.Schema;
+import static com.portalis.lib.schema.ChoicesKt.testPolymorphic;
+
+import com.portalis.lib.schema.Schema;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,6 +14,9 @@ public class Launcher {
         var file = new FileWriter("schema.json");
         file.write(Schema.INSTANCE.prettyPrintedSchema());
         file.flush();
-        App.main(args);
+
+        testPolymorphic();
+
+        //App.main(args);
     }
 }

@@ -1,5 +1,9 @@
 package com.portalis.lib
 
+import com.portalis.lib.schema.Comment
+import com.portalis.lib.schema.Format
+import com.portalis.lib.schema.Formats
+import com.portalis.lib.schema.Pattern
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -64,7 +68,7 @@ class Source(
 )
 
 @Serializable
-class PaginationDefinition (
+class PaginationDefinition(
     @property:Pattern("{{pageNumber}}")
     @property:Comment("{{pageNumber}} by the incrementing page number")
     val queryString: String,

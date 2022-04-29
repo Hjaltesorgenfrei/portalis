@@ -1,4 +1,4 @@
-package com.portalis.lib
+package com.portalis.lib.schema
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -28,7 +28,7 @@ class OverviewHtmlSelection(val bookster: String) : Overview() {
 }
 
 @Serializable
-class PolyParser (val overview: Overview)
+class PolyParser(val overview: Overview)
 
 fun testPolymorphic() {
     val k = Overview::class.findAnnotation<Choices>()
@@ -37,7 +37,7 @@ fun testPolymorphic() {
             println(it.qualifiedName)
         }
     }
-    val o : PolyParser = PolyParser(OverviewScriptSelection("qwd"))
+    val o: PolyParser = PolyParser(OverviewScriptSelection("qwd"))
     val s = Json.encodeToString(o)
     println(s)
     val o_out: PolyParser = Json.decodeFromString(s)

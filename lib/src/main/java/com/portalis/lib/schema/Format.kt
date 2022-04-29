@@ -1,6 +1,6 @@
-package com.portalis.lib
+package com.portalis.lib.schema
 
-enum class Formats (val jsonValue : String){
+enum class Formats(val jsonValue: String) {
     // Taken from https://json-schema.org/understanding-json-schema/reference/string.html#built-in-formats
 
     // Dates and times
