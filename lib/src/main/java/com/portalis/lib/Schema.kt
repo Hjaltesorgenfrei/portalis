@@ -37,10 +37,13 @@ object Schema {
         val objClass = type.classifier as KClass<*>
 
         val values = JSONObject()
+
+        prop.findAnnotation<Comment>()?.let { values.put("\$comment", it.value) }
+
         when (objClass) {
             String::class -> {
-                val pattern = prop.findAnnotation<Pattern>()
-                pattern?.let { p -> values.put("pattern", p.pattern) }
+                prop.findAnnotation<Pattern>()?.let { values.put("pattern", it.pattern) }
+                prop.findAnnotation<Format>()?.let { values.put("format", it.format.jsonValue) }
             }
             Int::class -> {}
             else -> {

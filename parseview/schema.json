@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "baseurl": {
-      "pattern": "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+      "format": "uri",
       "type": "string"
     },
     "topRated": {
@@ -14,6 +14,7 @@
         "startPage": {"type": "integer"},
         "queryString": {
           "pattern": "{{pageNumber}}",
+          "$comment": "{{pageNumber}} by the incrementing page number",
           "type": "string"
         }
       },

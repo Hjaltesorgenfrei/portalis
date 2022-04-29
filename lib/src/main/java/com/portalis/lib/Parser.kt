@@ -56,7 +56,7 @@ class Parser(input: String) {
 
 @Serializable
 class Source(
-    @property:Pattern(UrlPattern)
+    @property:Format(Formats.URI)
     val baseurl: String,
     val topRated: PaginationDefinition?,
     val overviewSelector: OverviewSelector,
@@ -66,6 +66,7 @@ class Source(
 @Serializable
 class PaginationDefinition (
     @property:Pattern("{{pageNumber}}")
+    @property:Comment("{{pageNumber}} by the incrementing page number")
     val queryString: String,
     val startPage: Int
 )

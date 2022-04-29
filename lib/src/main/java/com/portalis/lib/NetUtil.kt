@@ -13,7 +13,7 @@ class NetUtil {
             val request: Request = Request.Builder()
                 .url(url)
                 .build()
-            OkHttpClient().newCall(request).enqueue(callback)
+            client.newCall(request).enqueue(callback)
         }
 
         @Throws(IOException::class)
@@ -21,7 +21,7 @@ class NetUtil {
             val request: Request = Request.Builder()
                 .url(url)
                 .build()
-            return OkHttpClient().newCall(request).execute().body?.string()
+            return client.newCall(request).execute().body?.string()
         }
     }
 }

@@ -1,6 +1,10 @@
 package com.portalis.lib
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
@@ -14,12 +18,17 @@ sealed class Overview {
 }
 
 @Serializable
-class OverviewScriptSelection(val book: String = "10") : Overview() {
+@SerialName("SCRIPT")
+class OverviewScriptSelection(val book: String) : Overview() {
 }
 
 @Serializable
-class OverviewHtmlSelection(val book: String) : Overview() {
+@SerialName("HTML")
+class OverviewHtmlSelection(val bookster: String) : Overview() {
 }
+
+@Serializable
+class PolyParser (val overview: Overview)
 
 fun testPolymorphic() {
     val k = Overview::class.findAnnotation<Choices>()
@@ -28,4 +37,9 @@ fun testPolymorphic() {
             println(it.qualifiedName)
         }
     }
+    val o : PolyParser = PolyParser(OverviewScriptSelection("qwd"))
+    val s = Json.encodeToString(o)
+    println(s)
+    val o_out: PolyParser = Json.decodeFromString(s)
+    println(o_out.overview)
 }
