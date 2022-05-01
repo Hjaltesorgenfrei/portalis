@@ -22,10 +22,9 @@ fun ReadChapter() {
         true -> CenteredLoadingSpinner()
         false ->
             LazyColumn(
-                modifier = Modifier.padding(horizontal =  8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(8.dp)
             ) {
-                item { Spacer(Modifier.height(8.dp)) }
                 items(viewModel.uiState.chapterContent.content) { item ->
                     when (item) {
                         is TextContent -> Text(item.text)
@@ -41,7 +40,6 @@ fun ReadChapter() {
                         }
                     }
                 }
-                item { Spacer(Modifier.height(8.dp)) }
             }
     }
 }
