@@ -5,14 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.ViewModel
-import com.portalis.lib.Chapter
-import com.portalis.lib.NetUtil
-import com.portalis.lib.Parser
+import com.portalis.lib.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.jsoup.Jsoup
+import org.jsoup.parser.Tag
 import java.io.IOException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -25,7 +24,7 @@ class CurrentChapter @Inject constructor() {
 }
 
 data class ChapterUiState(
-    val chapterContent: String = "",
+    val chapterContent: ChapterContent = ChapterContent(listOf()),
     val loading: Boolean = true
 )
 
@@ -34,7 +33,7 @@ class ChapterModel @Inject constructor(
     currentChapter: CurrentChapter,
     private val royalRoadParser: RoyalRoadParser
 ) : ViewModel() {
-    fun chapterReady(chapterContent: String) {
+    fun chapterReady(chapterContent: ChapterContent) {
         uiState = ChapterUiState(chapterContent, false)
     }
 
@@ -56,10 +55,22 @@ private fun loadChapter(encodedUri: String, viewModel: ChapterModel, parser: Par
         override fun onResponse(call: Call, response: Response) {
             val result = response.body?.string()
             val doc = Jsoup.parse(result as String)
-            val chapterHtml = doc.getElementsByClass("chapter-content")[0].html()
-            val chapterText =
-                HtmlCompat.fromHtml(chapterHtml, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
-            viewModel.chapterReady(chapterText)
+            val chapterContent = doc.getElementsByClass("chapter-content")[0]
+            val chapterText = chapterContent.select("p, hr").map {
+                when {
+                    it.select("img").any() -> {
+                        ImageContent(it.select("img").attr("src"))
+                    }
+                    it.tag() == Tag.valueOf("hr") -> {
+                        HorizontalLine
+                    }
+                    else -> {
+                        val text = HtmlCompat.fromHtml(it.html(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+                        TextContent(text)
+                    }
+                }
+            }
+            viewModel.chapterReady(ChapterContent(chapterText))
             println("Downloaded chapter")
         }
     })

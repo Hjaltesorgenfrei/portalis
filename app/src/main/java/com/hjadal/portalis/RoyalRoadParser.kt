@@ -13,7 +13,11 @@ private const val source = """
   "overviewSelector": {
     "book": ".fiction-list-item.row",
     "bookTitle": ".fiction-title",
-    "bookUri": "a[href]",
+    "bookUri": {
+      "type": "com.portalis.lib.AttributeValueSelector",
+      "attribute": "href",
+      "selector": "a[href]"
+    },
     "bookImageUri": "img[src]"
   },
   "bookSelector": {
