@@ -80,6 +80,10 @@ object Schema {
         when (objClass) {
             String::class -> {}
             Int::class -> {}
+            Long::class -> {}
+            Double::class -> {}
+            Float::class -> {}
+            Boolean::class -> {}
             else -> {
                 val isDefinition = definitions.values.contains(objClass)
                 val requiredFields = objClass.requiredFields().map { f -> f.name }.toMutableList()
@@ -105,6 +109,10 @@ object Schema {
         val typeString = when (objClass) {
             String::class -> "string"
             Int::class -> "integer"
+            Long::class -> "integer"
+            Double::class -> "number"
+            Float::class -> "number"
+            Boolean::class -> "bool"
             else -> "object"
         }
         values.put("type", typeString)
