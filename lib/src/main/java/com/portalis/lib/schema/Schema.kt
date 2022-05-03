@@ -8,12 +8,12 @@ import kotlin.reflect.full.findAnnotation
 
 object Schema {
     fun prettyPrintedSchema(): String {
-        return createSchema().toString(2)
+        return createSchema(Source::class).toString(2)
     }
 
-    private fun createSchema(): JSONObject {
+    internal fun createSchema(objClass : KClass<*>): JSONObject {
         val definitions: MutableMap<String, KClass<*>> = mutableMapOf()
-        val schema = expandClass(Source::class, definitions)
+        val schema = expandClass(objClass, definitions)
         schema.put("\$schema", "http://json-schema.org/draft-07/schema#")
         schema.getJSONObject("properties").put("\$schema", SchemaProperty)
 
