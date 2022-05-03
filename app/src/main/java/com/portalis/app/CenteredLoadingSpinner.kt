@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

@@ -1,4 +1,4 @@
-package com.hjadal.portalis.database
+package com.portalis.app.database
 
 import android.content.Context
 import androidx.room.Database
@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 @Database(entities = [SourceItem::class], version = 1)
 abstract class SourceDatabase : RoomDatabase() {
     abstract fun sourceDao(): SourceDatabaseDao
+
     companion object {
         private var INSTANCE: SourceDatabase? = null
         fun getInstance(context: Context): SourceDatabase {

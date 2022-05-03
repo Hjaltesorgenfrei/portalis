@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState

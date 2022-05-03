@@ -1,10 +1,10 @@
-package com.hjadal.portalis.di
+package com.portalis.app.di
 
 import android.content.Context
 import androidx.room.Room
-import com.hjadal.portalis.database.SourceDatabase
-import com.hjadal.portalis.database.SourceDatabaseDao
-import com.hjadal.portalis.database.SourceRepository
+import com.portalis.app.database.SourceDatabase
+import com.portalis.app.database.SourceDatabaseDao
+import com.portalis.app.database.SourceRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,9 +14,9 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-class DatabaseModule  {
+class DatabaseModule {
     @Provides
-    fun provideExampleDao(sourceDatabase: SourceDatabase) : SourceDatabaseDao {
+    fun provideExampleDao(sourceDatabase: SourceDatabase): SourceDatabaseDao {
         return sourceDatabase.sourceDao()
     }
 
@@ -32,5 +32,6 @@ class DatabaseModule  {
     }
 
     @Provides
-    fun providesExampleRepository(sourceDao: SourceDatabaseDao) : SourceRepository = SourceRepository(sourceDao)
+    fun providesExampleRepository(sourceDao: SourceDatabaseDao): SourceRepository =
+        SourceRepository(sourceDao)
 }

@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,11 +32,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.hjadal.portalis.database.SourceItem
-import com.hjadal.portalis.database.SourceRepository
+import com.portalis.app.database.SourceItem
+import com.portalis.app.database.SourceRepository
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -55,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   SetupRootNav(navController)
+                    SetupRootNav(navController)
                 }
             }
         }
@@ -90,7 +88,7 @@ private fun SetupRootNav(navController: NavHostController) {
 class SourceViewModel @Inject constructor(
     val repository: SourceRepository
 ) : ViewModel() {
-    fun AddItem (){
+    fun AddItem() {
         viewModelScope.launch {
             repository.addSource(SourceItem(itemName = "Mester"))
             println("Added new item")
@@ -99,18 +97,19 @@ class SourceViewModel @Inject constructor(
 
     fun deleteItem(item: SourceItem) {
         viewModelScope.launch {
-           repository.deleteSource(item)
+            repository.deleteSource(item)
         }
     }
 }
 
 @Composable
 fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
-    var size by remember { mutableStateOf(-1)}
+    var size by remember { mutableStateOf(-1) }
     val sourceItems by sourceViewModel.repository.readAllData.observeAsState()
     Column {
         Text(text = size.toString())
-        Button(onClick = { sourceViewModel.AddItem()
+        Button(onClick = {
+            sourceViewModel.AddItem()
         }) {
             Text("Click me!")
         }
@@ -119,7 +118,7 @@ fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
                 items(i) { item ->
                     Row {
                         Text(text = "${item.itemId} ${item.itemName}")
-                        Button(onClick = {sourceViewModel.deleteItem(item)}) {
+                        Button(onClick = { sourceViewModel.deleteItem(item) }) {
                             Text("Delete me")
                         }
                     }

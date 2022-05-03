@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +65,8 @@ private fun loadChapter(encodedUri: String, viewModel: ChapterModel, parser: Par
                         HorizontalLine
                     }
                     else -> {
-                        val text = HtmlCompat.fromHtml(it.html(), HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+                        val text = HtmlCompat.fromHtml(it.html(), HtmlCompat.FROM_HTML_MODE_LEGACY)
+                            .toString()
                         TextContent(text)
                     }
                 }

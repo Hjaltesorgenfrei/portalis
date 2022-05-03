@@ -1,4 +1,4 @@
-package com.hjadal.portalis.database
+package com.portalis.app.database
 
 import androidx.lifecycle.LiveData
 
@@ -8,12 +8,15 @@ class SourceRepository(private val dao: SourceDatabaseDao) {
     suspend fun addSource(sourceItem: SourceItem) {
         dao.insert(sourceItem)
     }
+
     suspend fun updateSource(sourceItem: SourceItem) {
         dao.update(sourceItem)
     }
+
     suspend fun deleteSource(sourceItem: SourceItem) {
         dao.delete(sourceItem)
     }
+
     suspend fun deleteAllTodos() {
         dao.deleteAllSources()
     }

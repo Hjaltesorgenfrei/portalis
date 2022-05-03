@@ -1,19 +1,17 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.room.Room
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.hjadal.portalis.database.SourceDatabase
-import com.hjadal.portalis.database.SourceDatabaseDao
-import com.hjadal.portalis.database.SourceItem
+import androidx.test.platform.app.InstrumentationRegistry
+import com.portalis.app.database.SourceDatabase
+import com.portalis.app.database.SourceDatabaseDao
+import com.portalis.app.database.SourceItem
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-
+import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
-import org.junit.Before
 import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)

@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -12,7 +12,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*

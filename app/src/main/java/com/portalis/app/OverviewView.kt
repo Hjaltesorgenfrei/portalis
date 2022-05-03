@@ -1,4 +1,4 @@
-package com.hjadal.portalis
+package com.portalis.app
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -44,9 +44,9 @@ class OverviewModel @Inject constructor(
 ) : ViewModel() {
 
     val books = Pager(
-                    config = PagingConfig(pageSize = 20, prefetchDistance = 2),
-                    pagingSourceFactory = { BookPager(royalRoadParser) }
-                ).flow.cachedIn(viewModelScope)
+        config = PagingConfig(pageSize = 20, prefetchDistance = 2),
+        pagingSourceFactory = { BookPager(royalRoadParser) }
+    ).flow.cachedIn(viewModelScope)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -76,7 +76,7 @@ fun Overview(
 }
 
 @ExperimentalFoundationApi
-public fun <T: Any> LazyGridScope.items(
+public fun <T : Any> LazyGridScope.items(
     lazyPagingItems: LazyPagingItems<T>,
     itemContent: @Composable LazyItemScope.(value: T?) -> Unit
 ) {
