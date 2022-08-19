@@ -2,9 +2,9 @@ package com.portalis.app.di
 
 import android.content.Context
 import androidx.room.Room
-import com.portalis.app.database.SourceDatabase
-import com.portalis.app.database.SourceDatabaseDao
-import com.portalis.app.database.SourceRepository
+import com.portalis.app.database.BookDatabase
+import com.portalis.app.database.BookDatabaseDao
+import com.portalis.app.database.BookRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,22 +16,22 @@ import javax.inject.Singleton
 @Module
 class DatabaseModule {
     @Provides
-    fun provideExampleDao(sourceDatabase: SourceDatabase): SourceDatabaseDao {
-        return sourceDatabase.sourceDao()
+    fun provideExampleDao(bookDatabase: BookDatabase): BookDatabaseDao {
+        return bookDatabase.bookDao()
     }
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext appContext: Context): SourceDatabase {
+    fun provideAppDatabase(@ApplicationContext appContext: Context): BookDatabase {
         return Room.databaseBuilder(
             appContext,
-            SourceDatabase::class.java,
+            BookDatabase::class.java,
             "source_database"
         ).fallbackToDestructiveMigration()
             .build()
     }
 
     @Provides
-    fun providesExampleRepository(sourceDao: SourceDatabaseDao): SourceRepository =
-        SourceRepository(sourceDao)
+    fun providesExampleRepository(sourceDao: BookDatabaseDao): BookRepository =
+        BookRepository(sourceDao)
 }

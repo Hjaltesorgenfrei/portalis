@@ -1,7 +1,9 @@
 package com.portalis.lib
 
 import okhttp3.*
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.net.URL
 
 class NetUtil {
     companion object {
@@ -22,6 +24,14 @@ class NetUtil {
                 .url(url)
                 .build()
             return client.newCall(request).execute().body?.string()
+        }
+
+        @Throws(IOException::class)
+        fun getImageBytes(imageUrl: String): ByteArray? {
+            val request: Request = Request.Builder()
+                .url(imageUrl)
+                .build()
+            return client.newCall(request).execute().body?.bytes()
         }
     }
 }

@@ -32,11 +32,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.portalis.app.database.SourceItem
-import com.portalis.app.database.SourceRepository
+import com.portalis.app.database.BookItem
+import com.portalis.app.database.BookRepository
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 private fun SetupRootNav(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "overview") {
+    NavHost(navController = navController, startDestination = Screen.Library.route) {
         composable("book_screen") {
             NavigationBars(navController, topBar = TopBar("")) {
                 BookScreen(navController)
@@ -71,14 +72,14 @@ private fun SetupRootNav(navController: NavHostController) {
         composable("read_chapter") {
             ReadChapter()
         }
-        composable("overview") {
+        composable(Screen.Browse.route) {
             NavigationBars(navController) {
-                Overview(navController)
+                Browse(navController)
             }
         }
-        composable("database") {
+        composable(Screen.Library.route) {
             NavigationBars(navController) {
-                SourcesView()
+                Library(navController)
             }
         }
     }
@@ -86,16 +87,16 @@ private fun SetupRootNav(navController: NavHostController) {
 
 @HiltViewModel
 class SourceViewModel @Inject constructor(
-    val repository: SourceRepository
+    val repository: BookRepository
 ) : ViewModel() {
     fun AddItem() {
         viewModelScope.launch {
-            repository.addSource(SourceItem(itemName = "Mester"))
+            repository.addBook(BookItem(UUID.randomUUID().toString(), title = "Meister"))
             println("Added new item")
         }
     }
 
-    fun deleteItem(item: SourceItem) {
+    fun deleteItem(item: BookItem) {
         viewModelScope.launch {
             repository.deleteSource(item)
         }
@@ -117,7 +118,7 @@ fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
             LazyColumn {
                 items(i) { item ->
                     Row {
-                        Text(text = "${item.itemId} ${item.itemName}")
+                        Text(text = "${item.itemId} ${item.title}")
                         Button(onClick = { sourceViewModel.deleteItem(item) }) {
                             Text("Delete me")
                         }
@@ -129,8 +130,8 @@ fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
 }
 
 sealed class Screen(val route: String, val display: String, val icon: ImageVector) {
-    object Overview : Screen("overview", "Library", Icons.Filled.CollectionsBookmark)
-    object Database : Screen("database", "Browse", Icons.Filled.Explore)
+    object Library : Screen("library", "Library", Icons.Filled.CollectionsBookmark)
+    object Browse : Screen("browse", "Browse", Icons.Filled.Explore)
 }
 
 
@@ -194,8 +195,8 @@ private fun NavigationBars(
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 listOf(
-                    Screen.Overview,
-                    Screen.Database,
+                    Screen.Library,
+                    Screen.Browse,
                 ).forEach { screen ->
                     BottomNavigationItem(
                         icon = { Icon(screen.icon, contentDescription = screen.display) },
