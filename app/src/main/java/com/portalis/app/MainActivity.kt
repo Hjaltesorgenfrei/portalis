@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 private fun SetupRootNav(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Library.route) {
+    NavHost(navController = navController, startDestination = Screen.Browse.route) {
         composable("book_screen") {
             NavigationBars(navController, topBar = TopBar("")) {
                 BookScreen(navController)
@@ -74,7 +74,7 @@ private fun SetupRootNav(navController: NavHostController) {
         }
         composable(Screen.Browse.route) {
             NavigationBars(navController) {
-                Browse(navController)
+                Browse(navController, it)
             }
         }
         composable(Screen.Library.route) {
@@ -182,44 +182,50 @@ private fun NavigationBars(
             }
         }
     }
+    val heightOffset = bottomBarOffsetHeightPx.value.roundToInt().dp
 
-    Scaffold(
-        Modifier.nestedScroll(nestedScrollConnection),
-        topBar = { topBar(navController, bottomBarOffsetHeightPx) },
-        content = content,
-        bottomBar = {
-            BottomNavigation(
-                modifier = Modifier
-                    .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.value.roundToInt()) }
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                listOf(
-                    Screen.Library,
-                    Screen.Browse,
-                ).forEach { screen ->
-                    BottomNavigationItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.display) },
-                        label = { Text(screen.display) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
-                                restoreState = true
-                            }
+    Box(Modifier.nestedScroll(nestedScrollConnection)) {
+        content(PaddingValues(top = heightOffset, bottom = heightOffset))
+        topBar(navController, bottomBarOffsetHeightPx)
+        //bottomNav(bottomBarOffsetHeightPx, navController)
+    }
+}
+
+@Composable
+private fun bottomNav(
+    bottomBarOffsetHeightPx: MutableState<Float>,
+    navController: NavHostController
+) {
+    BottomNavigation(
+        modifier = Modifier
+            .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.value.roundToInt()) }
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        listOf(
+            Screen.Library,
+            Screen.Browse,
+        ).forEach { screen ->
+            BottomNavigationItem(
+                icon = { Icon(screen.icon, contentDescription = screen.display) },
+                label = { Text(screen.display) },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
                         }
-                    )
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
                 }
-            }
+            )
         }
-    )
+    }
 }

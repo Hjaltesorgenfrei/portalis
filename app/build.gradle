@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.portalis.app"
         minSdk 24
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -38,13 +38,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion '1.3.2'
     }
     packagingOptions {
         resources {
@@ -55,6 +54,7 @@ android {
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
+    namespace 'com.portalis.app'
 }
 
 kotlin.sourceSets.all {
@@ -63,25 +63,25 @@ kotlin.sourceSets.all {
 
 dependencies {
     implementation project(path: ':lib')
-    def lifecycle_version = "2.4.1"
-    def nav_version = "2.4.1"
-    def room_version = "2.4.1"
+    def lifecycle_version = "2.5.1"
+    def nav_version = "2.5.2"
+    def room_version = "2.4.3"
     def paging_version = "3.1.1"
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
 
     // Compose
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
-    implementation 'androidx.activity:activity-compose:1.4.0'
+    implementation "androidx.paging:paging-compose:1.0.0-alpha16"
+    implementation 'androidx.activity:activity-compose:1.6.0'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     implementation "androidx.navigation:navigation-compose:$nav_version"
-    implementation 'androidx.compose.runtime:runtime-livedata:1.1.1'
+    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
 
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
