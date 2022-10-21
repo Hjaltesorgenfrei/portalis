@@ -45,7 +45,6 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -81,7 +80,7 @@ class BookModel @Inject constructor(
         }
     }
 
-    fun deleteBook(book: Book) {
+    fun deleteBook() {
         viewModelScope.launch {
             uiState.bookItem?.let { repository.deleteBook(it) }
             update()
@@ -127,7 +126,7 @@ private fun loadChapters(viewModel: BookModel, parser: Parser) {
 
             override fun onResponse(call: Call, response: Response) {
                 response.body?.let { r ->
-                    var book = parser.parseBook(r.string(), viewModel.url)
+                    val book = parser.parseBook(r.string(), viewModel.url)
                     viewModel.bookReady(book)
                 }
             }
@@ -169,7 +168,7 @@ private fun HeaderView(book: Book, viewModel: BookModel = hiltViewModel()) {
             }
         } else {
             BookAction(Icons.Filled.Favorite, "Add To Library") {
-                viewModel.deleteBook(book)
+                viewModel.deleteBook()
             }
         }
     }
