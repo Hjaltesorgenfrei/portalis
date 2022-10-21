@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -66,7 +67,7 @@ private fun SetupRootNav(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.Browse.route) {
         composable("book_screen") {
             NavigationBars(navController, topBar = TopBar("")) {
-                BookScreen(navController)
+                BookScreen(navController, it)
             }
         }
         composable("read_chapter") {
@@ -79,7 +80,7 @@ private fun SetupRootNav(navController: NavHostController) {
         }
         composable(Screen.Library.route) {
             NavigationBars(navController) {
-                Library(navController)
+                Library(navController, it)
             }
         }
     }
@@ -105,7 +106,7 @@ class SourceViewModel @Inject constructor(
 
 @Composable
 fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
-    var size by remember { mutableStateOf(-1) }
+    val size by remember { mutableStateOf(-1) }
     val sourceItems by sourceViewModel.repository.readAllData.observeAsState()
     Column {
         Text(text = size.toString())
@@ -182,22 +183,22 @@ private fun NavigationBars(
             }
         }
     }
-    val heightOffset = bottomBarOffsetHeightPx.value.roundToInt().dp
 
-    Box(Modifier.nestedScroll(nestedScrollConnection)) {
-        content(PaddingValues(top = heightOffset, bottom = heightOffset))
+    Box(Modifier.nestedScroll(nestedScrollConnection).fillMaxHeight()) {
+        content(PaddingValues(top = bottomBarHeight, bottom = bottomBarHeight))
         topBar(navController, bottomBarOffsetHeightPx)
-        //bottomNav(bottomBarOffsetHeightPx, navController)
+        BottomNav(Modifier.align(Alignment.BottomCenter), bottomBarOffsetHeightPx, navController)
     }
 }
 
 @Composable
-private fun bottomNav(
+private fun BottomNav(
+    modifier: Modifier,
     bottomBarOffsetHeightPx: MutableState<Float>,
     navController: NavHostController
 ) {
     BottomNavigation(
-        modifier = Modifier
+        modifier = modifier
             .offset { IntOffset(x = 0, y = -bottomBarOffsetHeightPx.value.roundToInt()) }
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()

@@ -55,9 +55,9 @@ class CurrentBook @Inject constructor() {
 
 @HiltViewModel
 class BookModel @Inject constructor(
-    private val currentBook: CurrentBook,
+    currentBook: CurrentBook,
     val currentChapter: CurrentChapter,
-    private val parser: RoyalRoadParser
+    parser: RoyalRoadParser
 ) : ViewModel() {
 
     fun bookReady(book: Book) {
@@ -77,11 +77,12 @@ class BookModel @Inject constructor(
 @Composable
 fun BookScreen(
     navController: NavHostController,
+    paddingValues: PaddingValues,
     viewModel: BookModel = hiltViewModel()
 ) {
     when (viewModel.uiState.book) {
         null -> CenteredLoadingSpinner()
-        else -> ChaptersScreen(navController, viewModel.uiState.book!!)
+        else -> ChaptersScreen(navController, paddingValues, viewModel.uiState.book!!)
     }
 }
 
@@ -130,10 +131,14 @@ private fun HeaderView(book: Book) {
 @Composable
 private fun ChaptersScreen(
     navController: NavController,
+    paddingValues: PaddingValues,
     book: Book,
     viewModel: BookModel = hiltViewModel()
 ) {
     LazyColumn {
+        item {
+            Spacer(Modifier.padding(top = paddingValues.calculateTopPadding()))
+        }
         item {
             HeaderView(book)
         }
