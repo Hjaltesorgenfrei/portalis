@@ -14,12 +14,14 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
@@ -125,7 +127,30 @@ private fun HeaderView(book: Book) {
             Text(text = book.author, fontWeight = FontWeight.Bold)
         }
     }
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        BookAction(Icons.Outlined.FavoriteBorder, "Add To Library") {
+            println("Add " + book.title + " To library pls :)")
+        }
+    }
     ExpandingText(text = book.description, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+}
+
+@Composable
+private fun BookAction(image: ImageVector, description: String, onClick: () -> Unit) {
+    Column(verticalArrangement = Arrangement.Center, modifier = Modifier.clickable { onClick() }) {
+        Icon(
+            image,
+            description,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            tint = Color.Gray
+        )
+        Text(description, fontSize = 14.sp, color = Color.Gray)
+    }
 }
 
 @Composable
