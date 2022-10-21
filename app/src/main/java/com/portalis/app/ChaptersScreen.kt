@@ -14,6 +14,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,25 +30,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.portalis.app.database.BookItem
+import com.portalis.app.database.BookRepository
 import com.portalis.lib.Book
 import com.portalis.lib.NetUtil
 import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
-val MINIMIZED_MAX_LINES: Int = 4
+const val MINIMIZED_MAX_LINES: Int = 4
 
 internal data class BookUiState(
-    val book: Book? = null
+    val book: Book? = null,
+    val bookItem: BookItem? = null
 )
 
 @Singleton
@@ -59,11 +66,26 @@ class CurrentBook @Inject constructor() {
 class BookModel @Inject constructor(
     currentBook: CurrentBook,
     val currentChapter: CurrentChapter,
-    parser: RoyalRoadParser
+    parser: RoyalRoadParser,
+    private val repository: BookRepository
 ) : ViewModel() {
 
     fun bookReady(book: Book) {
-        uiState = BookUiState(book)
+        uiState = uiState.copy(book = book)
+    }
+
+    fun addBook(book: Book) {
+        viewModelScope.launch {
+            repository.addBook(BookItem(book.uri, book.title))
+            update()
+        }
+    }
+
+    fun deleteBook(book: Book) {
+        viewModelScope.launch {
+            uiState.bookItem?.let { repository.deleteBook(it) }
+            update()
+        }
     }
 
     internal var uiState by mutableStateOf(BookUiState())
@@ -71,7 +93,15 @@ class BookModel @Inject constructor(
 
     val url = currentBook.book?.uri
 
+    private fun update() {
+        viewModelScope.launch {
+            val bookItem = url?.let { repository.getById(it) }
+            uiState = uiState.copy(bookItem = bookItem)
+        }
+    }
+
     init {
+        update()
         loadChapters(this, parser.parser)
     }
 }
@@ -97,7 +127,7 @@ private fun loadChapters(viewModel: BookModel, parser: Parser) {
 
             override fun onResponse(call: Call, response: Response) {
                 response.body?.let { r ->
-                    val book = parser.parseBook(r.string())
+                    var book = parser.parseBook(r.string(), viewModel.url)
                     viewModel.bookReady(book)
                 }
             }
@@ -106,7 +136,7 @@ private fun loadChapters(viewModel: BookModel, parser: Parser) {
 }
 
 @Composable
-private fun HeaderView(book: Book) {
+private fun HeaderView(book: Book, viewModel: BookModel = hiltViewModel()) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         AsyncImage(
             model = book.imageUri,
@@ -133,8 +163,14 @@ private fun HeaderView(book: Book) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        BookAction(Icons.Outlined.FavoriteBorder, "Add To Library") {
-            println("Add " + book.title + " To library pls :)")
+        if (viewModel.uiState.bookItem == null) {
+            BookAction(Icons.Outlined.FavoriteBorder, "Add To Library") {
+                viewModel.addBook(book)
+            }
+        } else {
+            BookAction(Icons.Filled.Favorite, "Add To Library") {
+                viewModel.deleteBook(book)
+            }
         }
     }
     ExpandingText(text = book.description, modifier = Modifier.padding(start = 16.dp, end = 16.dp))

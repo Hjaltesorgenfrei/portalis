@@ -26,7 +26,7 @@ class Parser(input: String) {
         return books
     }
 
-    fun parseBook(htmlContent: String): Book {
+    fun parseBook(htmlContent: String, url: String): Book {
         val doc = Jsoup.parse(htmlContent)
         val bookSelector = sourceParser.bookSelector
         val title = doc.select(bookSelector.title)[0].text()
@@ -39,7 +39,7 @@ class Parser(input: String) {
             val chapterDate = e.select(bookSelector.chapterDate)[0].text()
             Chapter(chapterTitle, chapterUri, index.toString(), chapterDate)
         }
-        return Book(title, "", imageUri, chapters, author, description)
+        return Book(title, url, imageUri, chapters, author, description)
     }
 
     private val jsonFormat: Json = Json { ignoreUnknownKeys = true }

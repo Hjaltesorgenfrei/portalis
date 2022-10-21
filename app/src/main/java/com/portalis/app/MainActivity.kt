@@ -99,7 +99,7 @@ class SourceViewModel @Inject constructor(
 
     fun deleteItem(item: BookItem) {
         viewModelScope.launch {
-            repository.deleteSource(item)
+            repository.deleteBook(item)
         }
     }
 }
