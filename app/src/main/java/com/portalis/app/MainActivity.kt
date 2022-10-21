@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -83,6 +84,11 @@ private fun SetupRootNav(navController: NavHostController) {
                 Library(navController, it)
             }
         }
+        composable(Screen.Settings.route) {
+            NavigationBars(navController) {
+                Settings(navController, it)
+            }
+        }
     }
 }
 
@@ -133,6 +139,7 @@ fun SourcesView(sourceViewModel: SourceViewModel = hiltViewModel()) {
 sealed class Screen(val route: String, val display: String, val icon: ImageVector) {
     object Library : Screen("library", "Library", Icons.Filled.CollectionsBookmark)
     object Browse : Screen("browse", "Browse", Icons.Filled.Explore)
+    object Settings : Screen("settings", "Settings", Icons.Filled.Settings)
 }
 
 
@@ -206,6 +213,7 @@ private fun BottomNav(
         listOf(
             Screen.Library,
             Screen.Browse,
+            Screen.Settings
         ).forEach { screen ->
             BottomNavigationItem(
                 icon = { Icon(screen.icon, contentDescription = screen.display) },

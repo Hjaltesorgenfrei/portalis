@@ -20,4 +20,8 @@ class BookRepository(private val dao: BookDatabaseDao) {
     suspend fun deleteBook(bookItem: BookItem) {
         dao.delete(bookItem)
     }
+
+    suspend fun deleteAllBooks() {
+        dao.deleteAllBooks()
+    }
 }
