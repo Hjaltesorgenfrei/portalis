@@ -1,4 +1,5 @@
-package com.portalis.lib
+package com.portalis.app
+import android.graphics.Bitmap
 
 sealed interface ImageSource {
     fun getImage(): Any
@@ -10,8 +11,8 @@ class UrlImageSource(private val url: String) : ImageSource {
     }
 }
 
-class ByteArrayImageSource(val bytes: ByteArray) : ImageSource {
+class BitmapImageSource(private val bitmap: Bitmap) : ImageSource {
     override fun getImage(): Any {
-        return bytes
+        return bitmap
     }
 }

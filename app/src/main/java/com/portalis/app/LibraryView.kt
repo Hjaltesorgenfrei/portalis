@@ -1,5 +1,6 @@
 package com.portalis.app
 
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,8 +9,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import com.portalis.app.database.BookRepository
-import com.portalis.lib.ByteArrayImageSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.portalis.app.database.toBitMap
 import javax.inject.Inject
 
 
@@ -28,7 +29,8 @@ fun Library(
     val books by viewModel.repository.readAllData.observeAsState()
     books?.let {
         PaddedLazyGrid(paddingValues, it) { b ->
-            BookCover(b.title, b.imageBytes?.let { bytes -> ByteArrayImageSource(bytes) }, onClick = {
+            BookCover(b.title,
+                b.imageBytes.toBitMap()?.let { bitmap -> BitmapImageSource(bitmap) }, onClick = {
                 println(b.title)
             })
         }

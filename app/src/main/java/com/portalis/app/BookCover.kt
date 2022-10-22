@@ -16,12 +16,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.portalis.lib.ByteArrayImageSource
-import com.portalis.lib.ImageSource
+import com.portalis.app.BitmapImageSource
+import com.portalis.app.ImageSource
 import com.portalis.lib.NetUtil
-import com.portalis.lib.UrlImageSource
-import java.io.ByteArrayOutputStream
-import java.net.URL
+import com.portalis.app.UrlImageSource
 
 @Composable
 fun BookCover(title: String, image: ImageSource?, onClick: () -> Unit) {
@@ -71,16 +69,6 @@ fun URLPreview() {
         "Book Url",
         UrlImageSource("https://avatars.githubusercontent.com/u/5580160?s=88&u=50d7cf1469ca57370cb7e9a24653e64da43cf0ca&v=4")
     ) {
-    }
-}
-
-@Preview
-@Composable
-fun BytePreview() {
-    val bytes =
-        NetUtil.getImageBytes("https://avatars.githubusercontent.com/u/5580160?s=88&u=50d7cf1469ca57370cb7e9a24653e64da43cf0ca&v=4")
-    bytes?.let {
-        BookCover("Book Bytes", ByteArrayImageSource(it)) {}
     }
 }
 

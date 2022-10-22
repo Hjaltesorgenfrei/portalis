@@ -88,7 +88,7 @@ class BookModel @Inject constructor(
 
     fun addBook(book: Book) {
         viewModelScope.launch {
-            repository.addBook(toBookItem(book))
+            repository.addBook(toBookItem(book, uiState.image))
             update()
         }
     }

@@ -12,7 +12,6 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.portalis.lib.Book
-import com.portalis.lib.UrlImageSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
