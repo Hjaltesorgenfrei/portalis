@@ -46,7 +46,7 @@ class ChapterModel @Inject constructor(
 }
 
 private fun loadChapter(encodedUri: String, viewModel: ChapterModel, parser: Parser) {
-    val uri = parser.chapter(URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString()))
+    val uri = parser.prependBaseIfRelative(URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString()))
     NetUtil.run(uri, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()

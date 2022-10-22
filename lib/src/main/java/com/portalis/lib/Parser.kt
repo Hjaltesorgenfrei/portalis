@@ -18,9 +18,8 @@ class Parser(input: String) {
         val books = elements.toList()
             .map { e ->
                 val title = e.select(overviewSelector.bookTitle)[0].text()
-                val href = overviewSelector.bookUri.selectAndGet(e)
-                val uri = "${sourceParser.baseurl}${href}"
-                val imageUri = e.select(overviewSelector.bookImageUri)[0].attr("src")
+                val uri = prependBaseIfRelative(overviewSelector.bookUri.selectAndGet(e))
+                val imageUri = prependBaseIfRelative(e.select(overviewSelector.bookImageUri)[0].attr("src"))
                 Book(title, uri, imageUri)
             }
         return books
@@ -32,7 +31,7 @@ class Parser(input: String) {
         val title = doc.select(bookSelector.title)[0].text()
         val author = doc.select(bookSelector.author)[0].text()
         val description = doc.select(bookSelector.description)[0].text()
-        val imageUri = doc.select(bookSelector.imageUri)[0].attr("src")
+        val imageUri = prependBaseIfRelative(doc.select(bookSelector.imageUri)[0].attr("src"))
         val chapters = doc.select(bookSelector.chapter).toList().mapIndexed { index, e ->
             val chapterTitle = e.select(bookSelector.chapterTitle)[0].text()
             val chapterUri = e.select(bookSelector.chapterUri)[0].attr("href")
@@ -45,7 +44,7 @@ class Parser(input: String) {
     private val jsonFormat: Json = Json { ignoreUnknownKeys = true }
 
     private val sourceParser: Source = jsonFormat.decodeFromString(input)
-    fun chapter(path: String): String {
+    fun prependBaseIfRelative(path: String): String {
         if (path.startsWith("/")) {
             return sourceParser.baseurl + path
         }

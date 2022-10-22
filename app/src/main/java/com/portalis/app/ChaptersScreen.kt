@@ -1,5 +1,8 @@
 package com.portalis.app
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,13 +37,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.portalis.app.database.BookItem
 import com.portalis.app.database.BookRepository
+import com.portalis.app.database.toBookItem
 import com.portalis.lib.Book
 import com.portalis.lib.NetUtil
 import com.portalis.lib.Parser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
@@ -53,7 +64,8 @@ const val MINIMIZED_MAX_LINES: Int = 4
 
 internal data class BookUiState(
     val book: Book? = null,
-    val bookItem: BookItem? = null
+    val bookItem: BookItem? = null,
+    val image: Bitmap? = null
 )
 
 @Singleton
@@ -66,7 +78,8 @@ class BookModel @Inject constructor(
     currentBook: CurrentBook,
     val currentChapter: CurrentChapter,
     parser: RoyalRoadParser,
-    private val repository: BookRepository
+    private val repository: BookRepository,
+    private val application: ReaderApplication
 ) : ViewModel() {
 
     fun bookReady(book: Book) {
@@ -75,7 +88,7 @@ class BookModel @Inject constructor(
 
     fun addBook(book: Book) {
         viewModelScope.launch {
-            repository.addBook(BookItem(book.uri, book.title))
+            repository.addBook(toBookItem(book))
             update()
         }
     }
@@ -99,9 +112,29 @@ class BookModel @Inject constructor(
         }
     }
 
+    private fun loadImage(imageUrl: String) {
+        val context = application.applicationContext
+        viewModelScope.launch {
+
+            val loader = ImageLoader(context)
+            val request = ImageRequest.Builder(context)
+                .data(imageUrl)
+                .allowHardware(false) // Disable hardware bitmaps.
+                .build()
+
+            val result = (loader.execute(request) as? SuccessResult)?.drawable
+            val bitmap = (result as? BitmapDrawable)?.bitmap
+            uiState = uiState.copy(image =  bitmap)
+            if (bitmap == null) {
+                println("Failed to load image url: $imageUrl")
+            }
+        }
+    }
+
     init {
         update()
         loadChapters(this, parser.parser)
+        currentBook.book?.let { loadImage(it.imageUri) }
     }
 }
 
@@ -138,7 +171,7 @@ private fun loadChapters(viewModel: BookModel, parser: Parser) {
 private fun HeaderView(book: Book, viewModel: BookModel = hiltViewModel()) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         AsyncImage(
-            model = book.imageUri,
+            model = viewModel.uiState.image,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
