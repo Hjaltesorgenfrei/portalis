@@ -65,9 +65,10 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 private fun SetupRootNav(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Browse.route) {
+    NavHost(navController = navController, startDestination = Screen.Library.route) {
         composable("book_screen") {
-            NavigationBars(navController, topBar = TopBar("")) {
+            // TODO: Add the book title here, maybe the top bar function should be sent in and callbacked?
+            NavigationBars(navController, topBar = TopBar(""), displayBottomNav = false) {
                 BookScreen(navController, it)
             }
         }
@@ -142,6 +143,11 @@ sealed class Screen(val route: String, val display: String, val icon: ImageVecto
     object Settings : Screen("settings", "Settings", Icons.Filled.Settings)
 }
 
+val bottomNavScreens = listOf(
+    Screen.Library,
+    Screen.Browse,
+    Screen.Settings
+)
 
 private fun TopBar(title: String = "Portalis"): @Composable (NavHostController, MutableState<Float>) -> Unit {
     return (@Composable { navController, barOffsetHeightPx ->
@@ -149,7 +155,9 @@ private fun TopBar(title: String = "Portalis"): @Composable (NavHostController, 
             modifier = Modifier
                 .offset { IntOffset(x = 0, y = barOffsetHeightPx.value.roundToInt()) },
             title = { Text(title) },
-            navigationIcon = if (navController.previousBackStackEntry != null) {
+            navigationIcon = if (navController.previousBackStackEntry != null &&
+                !bottomNavScreens.map { it.route }.contains(navController.currentDestination?.route)
+            ) {
                 {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
@@ -169,6 +177,7 @@ private fun TopBar(title: String = "Portalis"): @Composable (NavHostController, 
 private fun NavigationBars(
     navController: NavHostController,
     topBar: @Composable (NavHostController, MutableState<Float>) -> Unit = TopBar(),
+    displayBottomNav: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val bottomBarHeight = 60.dp
@@ -191,10 +200,16 @@ private fun NavigationBars(
         }
     }
 
-    Box(Modifier.nestedScroll(nestedScrollConnection).fillMaxHeight()) {
+    Box(
+        Modifier
+            .nestedScroll(nestedScrollConnection)
+            .fillMaxHeight()
+    ) {
         content(PaddingValues(top = bottomBarHeight, bottom = bottomBarHeight))
         topBar(navController, bottomBarOffsetHeightPx)
-        BottomNav(Modifier.align(Alignment.BottomCenter), bottomBarOffsetHeightPx, navController)
+        if (displayBottomNav) {
+            BottomNav(Modifier.align(Alignment.BottomCenter), bottomBarOffsetHeightPx, navController)
+        }
     }
 }
 
@@ -210,11 +225,7 @@ private fun BottomNav(
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        listOf(
-            Screen.Library,
-            Screen.Browse,
-            Screen.Settings
-        ).forEach { screen ->
+        bottomNavScreens.forEach { screen ->
             BottomNavigationItem(
                 icon = { Icon(screen.icon, contentDescription = screen.display) },
                 label = { Text(screen.display) },
