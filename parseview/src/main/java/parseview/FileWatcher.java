@@ -78,7 +78,7 @@ public class FileWatcher extends Thread {
     }
 
     private void extractChapters(Parser parser) {
-        var book = parser.parseBook(htmlContent);
+        var book = parser.parseBook(htmlContent, bookUrl);
         Platform.runLater(() -> {
             rootItem.getChildren().clear();
             addBook(rootItem, book);
