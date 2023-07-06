@@ -14,14 +14,9 @@ import java.io.ByteArrayOutputStream
 
 @Entity(tableName = "books")
 class BookItem(
-    @PrimaryKey
-    var itemId: String,
-
-    @ColumnInfo(name = "title")
-    val title: String,
-
-    @ColumnInfo(name = "image_bytes")
-    val imageBytes: ByteArray? = null
+    @PrimaryKey var itemId: String,
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "image_bytes") val imageBytes: ByteArray? = null
 )
 
 fun getResizedBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
@@ -41,7 +36,7 @@ fun getResizedBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
 }
 
 
-fun toBookItem(book: Book, bitmap: Bitmap?) : BookItem {
+fun toBookItem(book: Book, bitmap: Bitmap?): BookItem {
     val image = bitmap?.let {
         val resized = getResizedBitmap(it, 400, 600)
         val bos = ByteArrayOutputStream()
