@@ -39,6 +39,8 @@ import com.portalis.app.database.BookRepository
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -72,7 +74,7 @@ private fun SetupRootNav(navController: NavHostController) {
                 BookScreen(navController, it)
             }
         }
-        composable("read_chapter") {
+        composable("read_chapter/{bookId}/{chapterId}") {
             ReadChapter()
         }
         composable(Screen.Browse.route) {

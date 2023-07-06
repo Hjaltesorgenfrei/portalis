@@ -38,6 +38,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
@@ -57,6 +58,8 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -246,7 +249,11 @@ private fun ChaptersScreen(
                     .padding(16.dp)
                     .clickable {
                         viewModel.currentChapter.chapter = i
-                        navController.navigate("read_chapter")
+                        // TODO: The url stuff should probably be a function somewhere.
+                        // Maybe some kind of arguments route stuff, so it is typed.
+                        val bookUrl = URLEncoder.encode(book.uri, StandardCharsets.UTF_8.toString())
+                        val chapterUrl = URLEncoder.encode(chapter.uri, StandardCharsets.UTF_8.toString())
+                        navController.navigate("read_chapter/$bookUrl/$chapterUrl")
                     }
             ) {
                 Column(modifier = Modifier.weight(1f)) {

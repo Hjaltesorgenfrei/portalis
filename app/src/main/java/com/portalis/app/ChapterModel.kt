@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.text.HtmlCompat
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.portalis.app.database.BookRepository
 import com.portalis.lib.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -33,10 +35,15 @@ data class ChapterUiState(
 
 @HiltViewModel
 class ChapterModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val currentChapter: CurrentChapter,
     private val currentBook: CurrentBook,
-    private val royalRoadParser: RoyalRoadParser
+    private val royalRoadParser: RoyalRoadParser,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
+    private val bookId: String = URLDecoder.decode(checkNotNull(savedStateHandle["bookId"]), StandardCharsets.UTF_8.toString())
+    private val chapterId: String = URLDecoder.decode(checkNotNull(savedStateHandle["chapterId"]), StandardCharsets.UTF_8.toString())
+
     fun chapterReady(chapterContent: ChapterContent) {
         uiState = ChapterUiState(chapterContent, false)
     }
@@ -46,6 +53,10 @@ class ChapterModel @Inject constructor(
     }
 
     fun nextChapter(listState: LazyListState) {
+        viewModelScope.launch {
+            val book = bookRepository.getById(bookId)
+            println("Book in repo: ${book?.title}")
+        }
         if (!hasNextChapter()) {
             return
         }
@@ -57,17 +68,25 @@ class ChapterModel @Inject constructor(
         loadChapter(currentBook.book!!.chapters[currentChapter.chapter!!].uri, this, royalRoadParser.parser)
     }
 
+    fun scrollProgress(firstVisibleItemIndex: Int) {
+        viewModelScope.launch {
+            val book = bookRepository.getById(bookId)
+            println("${book?.title} read progress $firstVisibleItemIndex")
+        }
+    }
+
     var uiState by mutableStateOf(ChapterUiState())
         private set
 
     init {
+        println("reading $bookId")
         loadChapter(currentBook.book!!.chapters[currentChapter.chapter!!].uri, this, royalRoadParser.parser)
     }
 }
 
-private fun loadChapter(encodedUri: String, viewModel: ChapterModel, parser: Parser) {
-    val uri = parser.prependBaseIfRelative(URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString()))
-    NetUtil.run(uri, object : Callback {
+private fun loadChapter(uri: String, viewModel: ChapterModel, parser: Parser) {
+    val uriWithPath = parser.prependBaseIfRelative(uri)
+    NetUtil.run(uriWithPath, object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             e.printStackTrace()
         }

@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Module
 class DatabaseModule {
     @Provides
-    fun provideExampleDao(bookDatabase: BookDatabase): BookDatabaseDao {
+    fun provideBookDao(bookDatabase: BookDatabase): BookDatabaseDao {
         return bookDatabase.bookDao()
     }
 
@@ -32,6 +32,6 @@ class DatabaseModule {
     }
 
     @Provides
-    fun providesExampleRepository(sourceDao: BookDatabaseDao): BookRepository =
+    fun providesBookRepository(sourceDao: BookDatabaseDao): BookRepository =
         BookRepository(sourceDao)
 }
