@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -75,7 +76,7 @@ class CurrentBook @Inject constructor() {
 
 @HiltViewModel
 class BookModel @Inject constructor(
-    currentBook: CurrentBook,
+    val currentBook: CurrentBook,
     val currentChapter: CurrentChapter,
     parser: RoyalRoadParser,
     private val repository: BookRepository,
@@ -83,6 +84,7 @@ class BookModel @Inject constructor(
 ) : ViewModel() {
 
     fun bookReady(book: Book) {
+        currentBook.book = book
         uiState = uiState.copy(book = book)
     }
 
@@ -235,7 +237,7 @@ private fun ChaptersScreen(
         item {
             HeaderView(book)
         }
-        items(book.chapters) { chapter ->
+        itemsIndexed(book.chapters) { i, chapter ->
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -243,7 +245,7 @@ private fun ChaptersScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
                     .clickable {
-                        viewModel.currentChapter.chapter = chapter
+                        viewModel.currentChapter.chapter = i
                         navController.navigate("read_chapter")
                     }
             ) {

@@ -1,16 +1,34 @@
 package com.portalis.app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowRight
+import androidx.compose.material.icons.filled.ArrowRightAlt
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.portalis.lib.HorizontalLine
@@ -20,12 +38,14 @@ import com.portalis.lib.TextContent
 @Composable
 fun ReadChapter() {
     val viewModel: ChapterModel = hiltViewModel()
+    val listState = rememberLazyListState()
     when (viewModel.uiState.loading) {
         true -> CenteredLoadingSpinner()
         false ->
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(8.dp)
+                contentPadding = PaddingValues(8.dp),
+                state = listState
             ) {
                 items(viewModel.uiState.chapterContent.content) { item ->
                     when (item) {
@@ -36,9 +56,38 @@ fun ReadChapter() {
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize(),
                         )
+
                         is HorizontalLine -> {
                             println("Making HR")
                             Divider(thickness = 1.dp)
+                        }
+                    }
+                }
+                if (viewModel.hasNextChapter()) {
+                    item {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .clickable {
+                                    viewModel.nextChapter(listState)
+                                }
+                        ) {
+                            Text(
+                                "Next Chapter",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                            Icon(
+                                Icons.Filled.ArrowRightAlt,
+                                "Next Chapter",
+                                Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .padding(8.dp)
+                            )
                         }
                     }
                 }

@@ -1,12 +1,15 @@
 package com.portalis.app
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.portalis.lib.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -20,7 +23,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CurrentChapter @Inject constructor() {
-    var chapter: Chapter? = null
+    var chapter: Int? = null
 }
 
 data class ChapterUiState(
@@ -30,18 +33,35 @@ data class ChapterUiState(
 
 @HiltViewModel
 class ChapterModel @Inject constructor(
-    currentChapter: CurrentChapter,
+    private val currentChapter: CurrentChapter,
+    private val currentBook: CurrentBook,
     private val royalRoadParser: RoyalRoadParser
 ) : ViewModel() {
     fun chapterReady(chapterContent: ChapterContent) {
         uiState = ChapterUiState(chapterContent, false)
     }
 
+    fun hasNextChapter(): Boolean {
+        return currentChapter.chapter!! < currentBook.book!!.chapters.size - 1
+    }
+
+    fun nextChapter(listState: LazyListState) {
+        if (!hasNextChapter()) {
+            return
+        }
+        uiState = ChapterUiState(ChapterContent(emptyList()), true)
+        currentChapter.chapter = currentChapter.chapter!! + 1
+        viewModelScope.launch {
+            listState.scrollToItem(0, 0)
+        }
+        loadChapter(currentBook.book!!.chapters[currentChapter.chapter!!].uri, this, royalRoadParser.parser)
+    }
+
     var uiState by mutableStateOf(ChapterUiState())
         private set
 
     init {
-        currentChapter.chapter?.let { loadChapter(it.uri, this, royalRoadParser.parser) }
+        loadChapter(currentBook.book!!.chapters[currentChapter.chapter!!].uri, this, royalRoadParser.parser)
     }
 }
 
